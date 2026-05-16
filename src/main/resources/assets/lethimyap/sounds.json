@@ -1,0 +1,10 @@
+{
+  "yap": {
+    "sounds": [
+      {
+        "name": "lethimyap:yap",
+        "attenuation_distance": 24
+      }
+    ]
+  }
+}

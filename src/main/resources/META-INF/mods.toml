@@ -1,0 +1,33 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="lethimyap"
+version="${mod_version}"
+displayName="Let Him Yap"
+authors="Stiathirs"
+description='''
+Why did they silence my boy? LET HIM YAP.
+
+A configurable contextual dialogue and immersion system.
+Players react dynamically to pain, hunger, danger, exhaustion, and more through dialogue.
+Features an open API to add dialogue pools, and an easy to edit config.
+'''
+
+[[dependencies.lethimyap]]
+modId="forge"
+mandatory=true
+versionRange="[47,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.lethimyap]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1]"
+ordering="NONE"
+side="BOTH"
+
+[[mixins]]
+config="lethimyap.mixins.json"

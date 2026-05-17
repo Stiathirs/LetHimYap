@@ -399,12 +399,33 @@ public class LetHimYapApi {
     }
 
     /**
-     * Returns the configured cooldown for fear events.
-     *
-     * This does not automatically apply cooldown logic to your addon.
-     * It simply exposes the configured value.
+     * Returns the player's current remaining fear event cooldown in ticks.
      */
-    public static int getFearEventCooldownTicks() {
+    public static int getFearEventCooldownTicks(ServerPlayer player) {
+        return com.lethimyap.messages.EventDialogueEvents.getFearCooldown(player);
+    }
+
+    /**
+     * Returns true if the player is currently on fear event cooldown.
+     */
+    public static boolean isFearEventOnCooldown(ServerPlayer player) {
+        return com.lethimyap.messages.EventDialogueEvents.isFearOnCooldown(player);
+    }
+
+    /**
+     * Starts the player's fear event cooldown using the configured server value.
+     */
+    public static void triggerFearEventCooldown(ServerPlayer player) {
+        com.lethimyap.messages.EventDialogueEvents.triggerFearCooldown(player);
+    }
+
+    /**
+     * Returns the configured fear event cooldown duration.
+     *
+     * Use this only when you need the configured max duration, not the player's
+     * current cooldown state.
+     */
+    public static int getConfiguredFearEventCooldownTicks() {
         return ServerMessageConfig.get().fearEventCooldownTicks;
     }
 

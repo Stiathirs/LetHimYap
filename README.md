@@ -8,15 +8,15 @@ Players now dynamically react to pain, danger, exhaustion, drowning, fear, food,
 
 Designed for immersion-heavy modpacks, survival experiences, roleplay servers, and emergent storytelling.
 
- 
-
 ***
 
 # Note
 
 This mod is currently in an open public beta. What you see is very much currently in development. Expect stuff to not always work. Features subject to change.
 
- 
+Also yeah uhh so basically this mod came into existence from a gimmick pack i was making and this message i sent a friend on discord
+
+<img width="270" height="265" alt="Screenshot_20260514_100314_Discord" src="https://github.com/user-attachments/assets/541b0046-9ff2-4bcd-9ff0-c7dcf439a70f" />
 
 ***
 

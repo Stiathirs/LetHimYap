@@ -31,7 +31,7 @@ public class EventDialogueEvents {
     private static final String INSOMNIA_WARNING_COOLDOWN =
             "lethimyap_insomnia_warning_cooldown";
 
-    private static final String FEAR_COOLDOWN =
+    public static final String FEAR_COOLDOWN =
             "lethimyap_fear_cooldown";
 
     private static final String SLEEP_START_TIME =
@@ -225,8 +225,7 @@ public class EventDialogueEvents {
     }
 
     private static void tryFearYelp(ServerPlayer player, ServerMessageConfig config) {
-        int cooldown = player.getPersistentData().getInt(FEAR_COOLDOWN);
-        if (cooldown > 0) return;
+        if (isFearOnCooldown(player)) return;
 
         PlayerMessageManager.forcePool(
                 player,
@@ -236,10 +235,7 @@ public class EventDialogueEvents {
                 YapPriority.PAIN
         );
 
-        player.getPersistentData().putInt(
-                FEAR_COOLDOWN,
-                Math.max(1, config.fearEventCooldownTicks)
-        );
+        triggerFearCooldown(player);
     }
 
     private static FoodQuality getFoodQuality(FoodProperties food) {
@@ -291,6 +287,30 @@ public class EventDialogueEvents {
                     currentExtra + extra
             );
         }
+    }
+
+    public static int getFearCooldown(ServerPlayer player) {
+        if (player == null) return 0;
+
+        return Math.max(
+                0,
+                player.getPersistentData().getInt(FEAR_COOLDOWN)
+        );
+    }
+
+    public static boolean isFearOnCooldown(ServerPlayer player) {
+        return getFearCooldown(player) > 0;
+    }
+
+    public static void triggerFearCooldown(ServerPlayer player) {
+        if (player == null) return;
+
+        ServerMessageConfig config = ServerMessageConfig.get();
+
+        player.getPersistentData().putInt(
+                FEAR_COOLDOWN,
+                Math.max(1, config.fearEventCooldownTicks)
+        );
     }
 
     private enum FoodQuality {

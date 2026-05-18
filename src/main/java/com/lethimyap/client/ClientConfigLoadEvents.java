@@ -4,6 +4,7 @@ import com.lethimyap.LetHimYap;
 import com.lethimyap.messages.ClientDialogueConfig;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
+import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -16,5 +17,12 @@ public class ClientConfigLoadEvents {
     @SubscribeEvent
     public static void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
         ClientDialogueConfig.get();
+    }
+
+    @SubscribeEvent
+    public static void onClientTick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.END) return;
+
+        ClientDialogueConfig.reloadIfChanged();
     }
 }

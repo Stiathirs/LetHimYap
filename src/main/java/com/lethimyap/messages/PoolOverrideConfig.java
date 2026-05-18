@@ -309,4 +309,8 @@ public class PoolOverrideConfig {
             return YapPoolRegistry.getGlobalDamageBlacklist().contains(damageType);
         }
     }
+
+    public static void reload() {
+        generateOrUpdate();
+    }
 }

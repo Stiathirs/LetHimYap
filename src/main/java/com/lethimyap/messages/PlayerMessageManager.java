@@ -546,7 +546,7 @@ public class PlayerMessageManager {
         );
     }
 
-    private static List<PoolOverrideConfig.PoolView> getBestAvailablePools(
+    public static List<PoolOverrideConfig.PoolView> getBestAvailablePools(
         ServerPlayer player,
         ServerMessageConfig config
     ) {

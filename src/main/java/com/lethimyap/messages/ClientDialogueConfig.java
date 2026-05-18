@@ -26,6 +26,8 @@ public class ClientDialogueConfig {
 
     private CommentedFileConfig toml;
 
+    private static long LAST_MODIFIED = 0L;
+
     public static ClientDialogueConfig get() {
         if (INSTANCE == null) {
             INSTANCE = load();
@@ -81,6 +83,7 @@ public class ClientDialogueConfig {
                 config.hudAnchor = "bottom";
             }
 
+            LAST_MODIFIED = getLastModified(file);
             return config;
 
         } catch (Exception e) {
@@ -344,5 +347,27 @@ public class ClientDialogueConfig {
         if (INSTANCE == null || INSTANCE.toml == null) return;
 
         com.lethimyap.api.YapPoolRegistry.writeMissingClientDefaults(INSTANCE.toml);
+    }
+
+    public static void reloadIfChanged() {
+        Path file = Path.of("config", "lethimyap", "client_dialogue.toml");
+
+        long modified = getLastModified(file);
+
+        if (modified <= 0L) return;
+
+        if (modified != LAST_MODIFIED) {
+            reload();
+        }
+    }
+
+    private static long getLastModified(Path file) {
+        try {
+            if (!Files.exists(file)) return 0L;
+
+            return Files.getLastModifiedTime(file).toMillis();
+        } catch (Exception e) {
+            return 0L;
+        }
     }
 }

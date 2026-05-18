@@ -411,7 +411,7 @@ public class PlayerMessageManager {
             if (!view.enabled) continue;
             if (!view.forcedOnly) continue;
             if (!"air".equals(pool.group)) continue;
-            if (!pool.matches(player)) continue;
+            if (!view.matches(player)) continue;
 
             if (bestAirPool == null) {
                 bestAirPool = pool;
@@ -546,7 +546,7 @@ public class PlayerMessageManager {
         );
     }
 
-    private static List<PoolOverrideConfig.PoolView> getBestAvailablePools(
+    public static List<PoolOverrideConfig.PoolView> getBestAvailablePools(
         ServerPlayer player,
         ServerMessageConfig config
     ) {
@@ -561,7 +561,7 @@ public class PlayerMessageManager {
 
             if (!view.enabled) continue;
             if (view.forcedOnly) continue;
-            if (!pool.matches(player)) continue;
+            if (!view.matches(player)) continue;
 
             PoolOverrideConfig.PoolView current = bestByGroup.get(pool.group);
 

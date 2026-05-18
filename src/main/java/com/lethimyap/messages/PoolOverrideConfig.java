@@ -1,12 +1,17 @@
 package com.lethimyap.messages;
 
+import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.UnmodifiableConfig;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.lethimyap.api.YapPoolRegistry;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class PoolOverrideConfig {
 
@@ -43,6 +48,8 @@ public class PoolOverrideConfig {
                     putIfMissing(toml, base + ".tier", pool.tier);
                     putIfMissing(toml, base + ".important", pool.important);
                     putIfMissing(toml, base + ".forcedOnly", pool.forcedOnly);
+                    putIfMissing(toml, base + ".conditionMode", pool.conditionMode.name());
+                    putIfMissing(toml, base + ".conditions", writeConditions(pool.conditions));
                 }
 
                 toml.setComment(
@@ -69,7 +76,7 @@ public class PoolOverrideConfig {
 
                 toml.setComment(
                         "globalDamageBlacklist",
-                        "Damage type IDs that should never trigger damage reaction dialogue."
+                        "Damage type IDs that should never trigger generic damage reaction dialogue."
                 );
 
                 putIfMissing(
@@ -77,7 +84,7 @@ public class PoolOverrideConfig {
                         "globalDamageBlacklist.damageTypes",
                         YapPoolRegistry.getGlobalDamageBlacklist()
                 );
-                
+
                 toml.save();
             }
 
@@ -104,13 +111,31 @@ public class PoolOverrideConfig {
 
                 String base = "pools." + pool.id;
 
+                PoolConditionMode conditionMode =
+                        PoolConditionMode.fromString(
+                                getString(
+                                        toml,
+                                        base + ".conditionMode",
+                                        pool.conditionMode.name()
+                                )
+                        );
+
+                ArrayList<PoolCondition> conditions =
+                        getConditions(
+                                toml,
+                                base + ".conditions",
+                                pool.conditions
+                        );
+
                 return new PoolView(
                         pool,
                         getBool(toml, base + ".enabled", true),
                         getInt(toml, base + ".weight", pool.weight),
                         getInt(toml, base + ".tier", pool.tier),
                         getBool(toml, base + ".important", pool.important),
-                        getBool(toml, base + ".forcedOnly", pool.forcedOnly)
+                        getBool(toml, base + ".forcedOnly", pool.forcedOnly),
+                        conditionMode,
+                        conditions
                 );
             }
 
@@ -171,6 +196,8 @@ public class PoolOverrideConfig {
         public final int tier;
         public final boolean important;
         public final boolean forcedOnly;
+        public final PoolConditionMode conditionMode;
+        public final ArrayList<PoolCondition> conditions;
 
         public PoolView(
                 ServerMessageConfig.Pool pool,
@@ -178,7 +205,9 @@ public class PoolOverrideConfig {
                 int weight,
                 int tier,
                 boolean important,
-                boolean forcedOnly
+                boolean forcedOnly,
+                PoolConditionMode conditionMode,
+                ArrayList<PoolCondition> conditions
         ) {
             this.pool = pool;
             this.enabled = enabled;
@@ -186,6 +215,12 @@ public class PoolOverrideConfig {
             this.tier = tier;
             this.important = important;
             this.forcedOnly = forcedOnly;
+            this.conditionMode = conditionMode == null
+                    ? PoolConditionMode.AND
+                    : conditionMode;
+            this.conditions = conditions == null
+                    ? new ArrayList<>()
+                    : conditions;
         }
 
         public static PoolView from(ServerMessageConfig.Pool pool) {
@@ -195,12 +230,73 @@ public class PoolOverrideConfig {
                     pool.weight,
                     pool.tier,
                     pool.important,
-                    pool.forcedOnly
+                    pool.forcedOnly,
+                    pool.conditionMode,
+                    copyConditions(pool.conditions)
             );
         }
 
         public static PoolView disabled(ServerMessageConfig.Pool pool) {
-            return new PoolView(pool, false, 0, 0, false, false);
+            return new PoolView(
+                    pool,
+                    false,
+                    0,
+                    0,
+                    false,
+                    false,
+                    PoolConditionMode.AND,
+                    new ArrayList<>()
+            );
+        }
+
+        public boolean matches(ServerPlayer player) {
+            if (conditions == null || conditions.isEmpty()) {
+                return true;
+            }
+
+            return switch (conditionMode) {
+                case AND -> matchesAnd(player);
+                case OR -> matchesOr(player);
+                case XOR -> matchesXor(player);
+            };
+        }
+
+        private boolean matchesAnd(ServerPlayer player) {
+            for (PoolCondition condition : conditions) {
+                if (condition == null) continue;
+
+                if (!condition.matches(player)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private boolean matchesOr(ServerPlayer player) {
+            for (PoolCondition condition : conditions) {
+                if (condition == null) continue;
+
+                if (condition.matches(player)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private boolean matchesXor(ServerPlayer player) {
+            int matches = 0;
+
+            for (PoolCondition condition : conditions) {
+                if (condition == null) continue;
+
+                if (condition.matches(player)) {
+                    matches++;
+                }
+            }
+
+            return matches == 1;
         }
     }
 
@@ -238,6 +334,163 @@ public class PoolOverrideConfig {
         }
     }
 
+    private static List<Config> writeConditions(List<PoolCondition> conditions) {
+        ArrayList<Config> result = new ArrayList<>();
+
+        if (conditions == null || conditions.isEmpty()) {
+            conditions = List.of(PoolCondition.always());
+        }
+
+        for (PoolCondition condition : conditions) {
+            if (condition == null) continue;
+
+            Config config = Config.inMemory();
+
+            config.set("type", condition.type);
+
+            if (condition.source != null && !condition.source.isBlank()) {
+                config.set("source", condition.source);
+            }
+
+            if (condition.nbtPath != null && !condition.nbtPath.isBlank()) {
+                config.set("nbtPath", condition.nbtPath);
+            }
+
+            config.set("compare", condition.compare);
+            config.set("value", condition.value);
+
+            result.add(config);
+        }
+
+        if (result.isEmpty()) {
+            Config config = Config.inMemory();
+            config.set("type", "always");
+            config.set("compare", "below_or_equal");
+            config.set("value", 0.0);
+            result.add(config);
+        }
+
+        return result;
+    }
+
+    private static ArrayList<PoolCondition> getConditions(
+            CommentedFileConfig toml,
+            String path,
+            List<PoolCondition> fallback
+    ) {
+        Object value = toml.get(path);
+
+        if (!(value instanceof List<?> list)) {
+            return copyConditions(fallback);
+        }
+
+        ArrayList<PoolCondition> result = new ArrayList<>();
+
+        for (Object entry : list) {
+            PoolCondition condition = readCondition(entry);
+
+            if (condition != null) {
+                result.add(condition);
+            }
+        }
+
+        if (result.isEmpty()) {
+            return copyConditions(fallback);
+        }
+
+        return result;
+    }
+
+    private static PoolCondition readCondition(Object entry) {
+        if (entry instanceof UnmodifiableConfig config) {
+            PoolCondition condition = new PoolCondition();
+
+            condition.type = getConfigString(config, "type", condition.type);
+            condition.source = getConfigString(config, "source", condition.source);
+            condition.nbtPath = getConfigString(config, "nbtPath", condition.nbtPath);
+            condition.compare = getConfigString(config, "compare", condition.compare);
+            condition.value = getConfigDouble(config, "value", condition.value);
+
+            return condition;
+        }
+
+        if (entry instanceof Map<?, ?> map) {
+            PoolCondition condition = new PoolCondition();
+
+            Object type = map.get("type");
+            if (type instanceof String s) {
+                condition.type = s;
+            }
+
+            Object source = map.get("source");
+            if (source instanceof String s) {
+                condition.source = s;
+            }
+
+            Object nbtPath = map.get("nbtPath");
+            if (nbtPath instanceof String s) {
+                condition.nbtPath = s;
+            }
+
+            Object compare = map.get("compare");
+            if (compare instanceof String s) {
+                condition.compare = s;
+            }
+
+            Object value = map.get("value");
+            if (value instanceof Number n) {
+                condition.value = n.doubleValue();
+            }
+
+            return condition;
+        }
+
+        return null;
+    }
+
+    private static ArrayList<PoolCondition> copyConditions(List<PoolCondition> conditions) {
+        ArrayList<PoolCondition> result = new ArrayList<>();
+
+        if (conditions != null) {
+            for (PoolCondition condition : conditions) {
+                if (condition == null) continue;
+
+                PoolCondition copy = new PoolCondition();
+                copy.type = condition.type;
+                copy.source = condition.source;
+                copy.nbtPath = condition.nbtPath;
+                copy.compare = condition.compare;
+                copy.value = condition.value;
+
+                result.add(copy);
+            }
+        }
+
+        if (result.isEmpty()) {
+            result.add(PoolCondition.always());
+        }
+
+        return result;
+    }
+
+    private static String getConfigString(
+            UnmodifiableConfig config,
+            String path,
+            String fallback
+    ) {
+        Object value = config.get(path);
+        return value instanceof String s ? s : fallback;
+    }
+
+    private static double getConfigDouble(
+            UnmodifiableConfig config,
+            String path,
+            double fallback
+    ) {
+        Object value = config.get(path);
+        return value instanceof Number n ? n.doubleValue() : fallback;
+    }
+
     private static boolean getBool(CommentedFileConfig toml, String path, boolean fallback) {
         Object value = toml.get(path);
         return value instanceof Boolean b ? b : fallback;
@@ -251,6 +504,11 @@ public class PoolOverrideConfig {
     private static double getDouble(CommentedFileConfig toml, String path, double fallback) {
         Object value = toml.get(path);
         return value instanceof Number n ? n.doubleValue() : fallback;
+    }
+
+    private static String getString(CommentedFileConfig toml, String path, String fallback) {
+        Object value = toml.get(path);
+        return value instanceof String s ? s : fallback;
     }
 
     private static List<String> getStringList(
@@ -308,5 +566,9 @@ public class PoolOverrideConfig {
             e.printStackTrace();
             return YapPoolRegistry.getGlobalDamageBlacklist().contains(damageType);
         }
+    }
+
+    public static void reload() {
+        generateOrUpdate();
     }
 }

@@ -2,7 +2,6 @@ package com.lethimyap.messages;
 
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.food.FoodData;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -283,34 +282,173 @@ public class ServerMessageConfig {
         public int weight;
         public boolean important = true;
         public boolean forcedOnly = false;
-        public Condition condition = new Condition();
 
-        public static Pool healthPercent(String id, String group, int tier, int weight, boolean important, boolean forcedOnly, float below) {
+        public PoolConditionMode conditionMode = PoolConditionMode.AND;
+        public ArrayList<PoolCondition> conditions = new ArrayList<>();
+
+        public static Pool healthPercent(
+                String id,
+                String group,
+                int tier,
+                int weight,
+                boolean important,
+                boolean forcedOnly,
+                float below
+        ) {
             Pool pool = base(id, group, tier, weight, important, forcedOnly);
-            pool.condition = Condition.healthPercentBelow(below);
+
+            pool.conditions.add(
+                    PoolCondition.healthPercent(
+                            "below_or_equal",
+                            below
+                    )
+            );
+
             return pool;
         }
 
-        public static Pool hunger(String id, String group, int tier, int weight, boolean important, boolean forcedOnly, float below) {
+        public static Pool hunger(
+                String id,
+                String group,
+                int tier,
+                int weight,
+                boolean important,
+                boolean forcedOnly,
+                float below
+        ) {
             Pool pool = base(id, group, tier, weight, important, forcedOnly);
-            pool.condition = Condition.hungerBelow(below);
+
+            pool.conditions.add(
+                    PoolCondition.hunger(
+                            "below_or_equal",
+                            below
+                    )
+            );
+
             return pool;
         }
 
-        public static Pool air(String id, String group, int tier, boolean important, float below) {
+        public static Pool air(
+                String id,
+                String group,
+                int tier,
+                boolean important,
+                float below
+        ) {
             Pool pool = base(id, group, tier, 0, important, true);
-            pool.condition = Condition.airBelow(below);
+
+            pool.conditions.add(
+                    PoolCondition.air(
+                            "below_or_equal",
+                            below
+                    )
+            );
+
             return pool;
         }
 
-        public static Pool nbtNumber(String id, String group, int tier, int weight, boolean important, boolean forcedOnly,
-                                     String path, String compare, float value) {
+        public static Pool nbtNumber(
+                String id,
+                String group,
+                int tier,
+                int weight,
+                boolean important,
+                boolean forcedOnly,
+                String path,
+                String compare,
+                float value
+        ) {
             Pool pool = base(id, group, tier, weight, important, forcedOnly);
-            pool.condition = Condition.nbtNumber(path, compare, value);
+
+            pool.conditions.add(
+                    PoolCondition.nbtNumber(
+                            path,
+                            compare,
+                            value
+                    )
+            );
+
             return pool;
         }
 
-        private static Pool base(String id, String group, int tier, int weight, boolean important, boolean forcedOnly) {
+        public static Pool sourceNumber(
+                String id,
+                String group,
+                int tier,
+                int weight,
+                boolean important,
+                boolean forcedOnly,
+                String source,
+                String compare,
+                double value
+        ) {
+            Pool pool = base(id, group, tier, weight, important, forcedOnly);
+
+            pool.conditions.add(
+                    PoolCondition.sourceNumber(
+                            source,
+                            compare,
+                            value
+                    )
+            );
+
+            return pool;
+        }
+
+        public static Pool always(
+                String id,
+                String group,
+                int tier,
+                int weight,
+                boolean important,
+                boolean forcedOnly
+        ) {
+            Pool pool = base(id, group, tier, weight, important, forcedOnly);
+
+            pool.conditions.add(PoolCondition.always());
+
+            return pool;
+        }
+
+        public static Pool custom(
+                String id,
+                String group,
+                int tier,
+                int weight,
+                boolean important,
+                boolean forcedOnly,
+                PoolConditionMode conditionMode,
+                PoolCondition... conditions
+        ) {
+            Pool pool = base(id, group, tier, weight, important, forcedOnly);
+
+            pool.conditionMode = conditionMode == null
+                    ? PoolConditionMode.AND
+                    : conditionMode;
+
+            if (conditions != null) {
+                for (PoolCondition condition : conditions) {
+                    if (condition != null) {
+                        pool.conditions.add(condition);
+                    }
+                }
+            }
+
+            if (pool.conditions.isEmpty()) {
+                pool.conditions.add(PoolCondition.always());
+            }
+
+            return pool;
+        }
+
+        private static Pool base(
+                String id,
+                String group,
+                int tier,
+                int weight,
+                boolean important,
+                boolean forcedOnly
+        ) {
             Pool pool = new Pool();
             pool.id = id;
             pool.group = group;
@@ -318,11 +456,62 @@ public class ServerMessageConfig {
             pool.weight = weight;
             pool.important = important;
             pool.forcedOnly = forcedOnly;
+            pool.conditionMode = PoolConditionMode.AND;
             return pool;
         }
 
         public boolean matches(ServerPlayer player) {
-            return condition == null || condition.matches(player);
+            if (conditions == null || conditions.isEmpty()) {
+                return true;
+            }
+
+            PoolConditionMode mode = conditionMode == null
+                    ? PoolConditionMode.AND
+                    : conditionMode;
+
+            return switch (mode) {
+                case AND -> matchesAnd(player);
+                case OR -> matchesOr(player);
+                case XOR -> matchesXor(player);
+            };
+        }
+
+        private boolean matchesAnd(ServerPlayer player) {
+            for (PoolCondition condition : conditions) {
+                if (condition == null) continue;
+
+                if (!condition.matches(player)) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private boolean matchesOr(ServerPlayer player) {
+            for (PoolCondition condition : conditions) {
+                if (condition == null) continue;
+
+                if (condition.matches(player)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private boolean matchesXor(ServerPlayer player) {
+            int matches = 0;
+
+            for (PoolCondition condition : conditions) {
+                if (condition == null) continue;
+
+                if (condition.matches(player)) {
+                    matches++;
+                }
+            }
+
+            return matches == 1;
         }
     }
 
@@ -340,72 +529,6 @@ public class ServerMessageConfig {
             this.minDamage = minDamage;
             this.chance = chance;
             this.important = important;
-        }
-    }
-
-    public static class Condition {
-        public String type = "always";
-        public float below = 0;
-        public String nbtPath = "";
-        public String compare = "below";
-        public float value = 0;
-
-        public static Condition healthPercentBelow(float percent) {
-            Condition condition = new Condition();
-            condition.type = "health_percent";
-            condition.below = percent;
-            return condition;
-        }
-
-        public static Condition hungerBelow(float hunger) {
-            Condition condition = new Condition();
-            condition.type = "hunger";
-            condition.below = hunger;
-            return condition;
-        }
-
-        public static Condition airBelow(float air) {
-            Condition condition = new Condition();
-            condition.type = "air";
-            condition.below = air;
-            return condition;
-        }
-
-        public static Condition nbtNumber(String path, String compare, float value) {
-            Condition condition = new Condition();
-            condition.type = "nbt_number";
-            condition.nbtPath = path;
-            condition.compare = compare;
-            condition.value = value;
-            return condition;
-        }
-
-        public boolean matches(ServerPlayer player) {
-            return switch (type) {
-                case "always" -> true;
-                case "health_percent" -> ((player.getHealth() / player.getMaxHealth()) * 100f) <= below;
-                case "health" -> player.getHealth() <= below;
-                case "hunger" -> {
-                    FoodData food = player.getFoodData();
-                    yield food.getFoodLevel() <= below;
-                }
-                case "air" -> player.getAirSupply() <= below;
-                case "nbt_number" -> matchesNbtNumber(player);
-                default -> false;
-            };
-        }
-
-        private boolean matchesNbtNumber(ServerPlayer player) {
-            double found = NbtPathReader.getNumber(player, nbtPath, Double.NaN);
-            if (Double.isNaN(found)) return false;
-
-            return switch (compare) {
-                case "below" -> found <= value;
-                case "above" -> found >= value;
-                case "equal" -> found == value;
-                case "not_equal" -> found != value;
-                default -> false;
-            };
         }
     }
 

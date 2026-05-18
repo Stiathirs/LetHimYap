@@ -1,9 +1,14 @@
 package com.lethimyap.command;
 
+import java.util.ArrayList;
+import com.mojang.brigadier.arguments.StringArgumentType;
 import com.lethimyap.LetHimYap;
 import com.lethimyap.api.LetHimYapApi;
+import com.lethimyap.api.YapPoolRegistry;
 import com.lethimyap.messages.PlayerMessageManager;
-import com.mojang.brigadier.arguments.StringArgumentType;
+import com.lethimyap.messages.PoolOverrideConfig;
+import com.lethimyap.messages.ServerMessageConfig;
+import net.minecraft.network.chat.Component;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;
@@ -175,6 +180,88 @@ public class YapDebugCommands {
                                             return 1;
                                         })
                                 )
+                        )
+
+                        .then(Commands.literal("reload")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    ServerMessageConfig.reload();
+                                    PoolOverrideConfig.reload();
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Reloaded Let Him Yap server configs."),
+                                            true
+                                    );
+
+                                    return 1;
+                                })
+                        )
+
+                        .then(Commands.literal("pools")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    ServerMessageConfig config = ServerMessageConfig.get();
+
+                                    ArrayList<String> ids = new ArrayList<>();
+
+                                    for (ServerMessageConfig.Pool pool : config.pools) {
+                                        if (pool != null && pool.id != null && !pool.id.isBlank()) {
+                                            ids.add(pool.id);
+                                        }
+                                    }
+
+                                    for (ServerMessageConfig.Pool pool : YapPoolRegistry.getServerPools()) {
+                                        if (pool != null && pool.id != null && !pool.id.isBlank()) {
+                                            ids.add(pool.id);
+                                        }
+                                    }
+
+                                    ids.sort(String::compareTo);
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Registered pools (" + ids.size() + "):"),
+                                            false
+                                    );
+
+                                    for (String id : ids) {
+                                        ctx.getSource().sendSuccess(
+                                                () -> Component.literal("- " + id),
+                                                false
+                                        );
+                                    }
+
+                                    return ids.size();
+                                })
+                        )
+
+                        .then(Commands.literal("availablepools")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    ServerMessageConfig config = ServerMessageConfig.get();
+
+                                    var pools = PlayerMessageManager.getBestAvailablePools(player, config);
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Available pools for " + player.getGameProfile().getName() + " (" + pools.size() + "):"),
+                                            false
+                                    );
+
+                                    for (PoolOverrideConfig.PoolView view : pools) {
+                                        ctx.getSource().sendSuccess(
+                                                () -> Component.literal(
+                                                        "- " + view.pool.id
+                                                                + " | group=" + view.pool.group
+                                                                + " | tier=" + view.tier
+                                                                + " | weight=" + view.weight
+                                                                + " | important=" + view.important
+                                                ),
+                                                false
+                                        );
+                                    }
+
+                                    return pools.size();
+                                })
                         )
         );
     }

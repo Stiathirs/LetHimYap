@@ -1,7 +1,6 @@
 package com.lethimyap.api;
 
-import com.lethimyap.messages.PlayerMessageManager;
-import com.lethimyap.messages.ServerMessageConfig;
+import com.lethimyap.messages.*;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -149,6 +148,166 @@ public class LetHimYapApi {
     }
 
     /**
+     * Registers a condition-based dialogue pool using the multi-condition system.
+     *
+     * Pools can combine conditions using:
+     * - AND
+     * - OR
+     * - XOR
+     *
+     * If conditionMode is null, AND is used.
+     */
+    public static void registerConditionPool(
+            String id,
+            String group,
+            int tier,
+            int weight,
+            boolean important,
+            boolean forcedOnly,
+            PoolConditionMode conditionMode,
+            PoolCondition... conditions
+    ) {
+        YapPoolRegistry.registerServerPool(
+                ServerMessageConfig.Pool.custom(
+                        id,
+                        group,
+                        tier,
+                        weight,
+                        important,
+                        forcedOnly,
+                        conditionMode,
+                        conditions
+                )
+        );
+    }
+
+    /**
+     * Registers a numeric condition source that dialogue pools can query.
+     *
+     * This allows addon mods to expose runtime values without storing them in NBT.
+     *
+     * Example IDs:
+     * - "mymod:sanity"
+     * - "mymod:temperature"
+     * - "mymod:corruption"
+     */
+    public static void registerNumberConditionSource(
+            String id,
+            java.util.function.Function<ServerPlayer, Double> getter
+    ) {
+        PoolConditionSourceRegistry.registerNumberSource(id, getter);
+    }
+
+    /**
+     * Convenience helper for source-number condition pools.
+     *
+     * Source-number pools query values from registered condition sources instead
+     * of reading persistent NBT.
+     */
+    public static void registerSourceNumberPool(
+            String id,
+            String group,
+            int tier,
+            int weight,
+            boolean important,
+            boolean forcedOnly,
+            String source,
+            String compare,
+            double value
+    ) {
+        YapPoolRegistry.registerServerPool(
+                ServerMessageConfig.Pool.sourceNumber(
+                        id,
+                        group,
+                        tier,
+                        weight,
+                        important,
+                        forcedOnly,
+                        source,
+                        compare,
+                        value
+                )
+        );
+    }
+
+    /**
+     * Creates an always-valid condition.
+     */
+    public static PoolCondition alwaysCondition() {
+        return PoolCondition.always();
+    }
+
+    /**
+     * Creates a health-percent condition.
+     */
+    public static PoolCondition healthPercentCondition(
+            String compare,
+            double value
+    ) {
+        return PoolCondition.healthPercent(compare, value);
+    }
+
+    /**
+     * Creates a health condition.
+     */
+    public static PoolCondition healthCondition(
+            String compare,
+            double value
+    ) {
+        return PoolCondition.health(compare, value);
+    }
+
+    /**
+     * Creates a hunger condition.
+     */
+    public static PoolCondition hungerCondition(
+            String compare,
+            double value
+    ) {
+        return PoolCondition.hunger(compare, value);
+    }
+
+    /**
+     * Creates an air condition.
+     */
+    public static PoolCondition airCondition(
+            String compare,
+            double value
+    ) {
+        return PoolCondition.air(compare, value);
+    }
+
+    /**
+     * Creates an NBT-number condition.
+     */
+    public static PoolCondition nbtNumberCondition(
+            String nbtPath,
+            String compare,
+            double value
+    ) {
+        return PoolCondition.nbtNumber(
+                nbtPath,
+                compare,
+                value
+        );
+    }
+
+    /**
+     * Creates a source-number condition.
+     */
+    public static PoolCondition sourceNumberCondition(
+            String source,
+            String compare,
+            double value
+    ) {
+        return PoolCondition.sourceNumber(
+                source,
+                compare,
+                value
+        );
+    }
+
+    /**
      * Adds default client-side dialogue lines for a pool.
      *
      * These are written to client_dialogue.toml if that pool does not already
@@ -158,47 +317,6 @@ public class LetHimYapApi {
      */
     public static void registerClientDefaultLines(String poolId, String... lines) {
         YapPoolRegistry.registerClientDefaultLines(poolId, lines);
-    }
-
-    /**
-     * Convenience helper for registering an NBT-number condition pool.
-     *
-     * The pool becomes eligible when the NBT value matches the comparison.
-     *
-     * Supported compare values:
-     * - "below"
-     * - "above"
-     * - "equal"
-     * - "not_equal"
-     *
-     * Example path:
-     * "Root.ForgeCaps.thirst:thirst.thirst"
-     * "ForgeData.mymod.some_value"
-     */
-    public static void registerNbtNumberPool(
-            String id,
-            String group,
-            int tier,
-            int weight,
-            boolean important,
-            boolean forcedOnly,
-            String nbtPath,
-            String compare,
-            float value
-    ) {
-        YapPoolRegistry.registerServerPool(
-                ServerMessageConfig.Pool.nbtNumber(
-                        id,
-                        group,
-                        tier,
-                        weight,
-                        important,
-                        forcedOnly,
-                        nbtPath,
-                        compare,
-                        value
-                )
-        );
     }
 
     /**
@@ -358,21 +476,21 @@ public class LetHimYapApi {
      * Adrenaline reduces typewriter slowdown temporarily.
      */
     public static void addAdrenaline(ServerPlayer player, double amount) {
-        com.lethimyap.messages.AdrenalineManager.addAdrenaline(player, amount);
+        AdrenalineManager.addAdrenaline(player, amount);
     }
 
     /**
      * Removes adrenaline from the player.
      */
     public static void removeAdrenaline(ServerPlayer player, double amount) {
-        com.lethimyap.messages.AdrenalineManager.removeAdrenaline(player, amount);
+        AdrenalineManager.removeAdrenaline(player, amount);
     }
 
     /**
      * Sets adrenaline directly.
      */
     public static void setAdrenaline(ServerPlayer player, double amount) {
-        com.lethimyap.messages.AdrenalineManager.setAdrenaline(player, amount);
+        AdrenalineManager.setAdrenaline(player, amount);
     }
 
     /**
@@ -402,21 +520,21 @@ public class LetHimYapApi {
      * Returns the player's current remaining fear event cooldown in ticks.
      */
     public static int getFearEventCooldownTicks(ServerPlayer player) {
-        return com.lethimyap.messages.EventDialogueEvents.getFearCooldown(player);
+        return EventDialogueEvents.getFearCooldown(player);
     }
 
     /**
      * Returns true if the player is currently on fear event cooldown.
      */
     public static boolean isFearEventOnCooldown(ServerPlayer player) {
-        return com.lethimyap.messages.EventDialogueEvents.isFearOnCooldown(player);
+        return EventDialogueEvents.isFearOnCooldown(player);
     }
 
     /**
      * Starts the player's fear event cooldown using the configured server value.
      */
     public static void triggerFearEventCooldown(ServerPlayer player) {
-        com.lethimyap.messages.EventDialogueEvents.triggerFearCooldown(player);
+        EventDialogueEvents.triggerFearCooldown(player);
     }
 
     /**

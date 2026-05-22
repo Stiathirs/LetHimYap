@@ -263,6 +263,43 @@ public class YapDebugCommands {
                                     return pools.size();
                                 })
                         )
+
+                        .then(Commands.literal("damagepools")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    ArrayList<ServerMessageConfig.DamagePool> pools = new ArrayList<>();
+
+                                    pools.addAll(ServerMessageConfig.get().damagePools);
+                                    pools.addAll(YapPoolRegistry.getDamagePools());
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Registered damage pools (" + pools.size() + "):"),
+                                            false
+                                    );
+
+                                    for (ServerMessageConfig.DamagePool pool : pools) {
+                                        PoolOverrideConfig.DamagePoolView view =
+                                                PoolOverrideConfig.applyDamagePool(pool);
+
+                                        if (view == null) continue;
+
+                                        ctx.getSource().sendSuccess(
+                                                () -> Component.literal(
+                                                        "- " + pool.id
+                                                                + " | enabled=" + view.enabled
+                                                                + " | minDamage=" + view.minDamage
+                                                                + " | chance=" + view.chance
+                                                                + " | important=" + view.important
+                                                                + " | excluded=" + view.excludedDamageTypes
+                                                                + " | exclusive=" + view.exclusiveDamageTypes
+                                                ),
+                                                false
+                                        );
+                                    }
+
+                                    return pools.size();
+                                })
+                        )
         );
     }
 }

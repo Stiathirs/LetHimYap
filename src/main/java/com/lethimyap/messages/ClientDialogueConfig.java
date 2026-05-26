@@ -61,7 +61,10 @@ public class ClientDialogueConfig {
 
             config.toml.load();
 
+            writeBuiltInDefaults(config.toml);
             YapPoolRegistry.writeMissingClientDefaults(config.toml);
+
+            config.toml.save();
 
             config.dialogueColor = DialogueColor.fromString(
                     getString(config.toml, "client.dialogueColor", "white")
@@ -97,6 +100,13 @@ public class ClientDialogueConfig {
     public String pickMessage(String poolId) {
         if (toml == null || poolId == null || poolId.isEmpty()) {
             return "";
+        }
+
+        String serverMessage =
+                com.lethimyap.client.ClientServerDialogueConfig.pickMessage(poolId);
+
+        if (serverMessage != null && !serverMessage.isBlank()) {
+            return serverMessage;
         }
 
         Object value = toml.get("pools." + poolId + ".messages");
@@ -147,14 +157,25 @@ public class ClientDialogueConfig {
             toml.set("lastWords.anchor", "center");
             toml.set("lastWords.offset", -20);
 
-            putMessages(toml, "health.light",
+            writeBuiltInDefaults(toml);
+
+            YapPoolRegistry.writeMissingClientDefaults(toml);
+            toml.save();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void writeBuiltInDefaults(CommentedFileConfig toml) {
+            putMessagesIfMissing(toml, "health.light",
                     "I'm a bit beat up. I should probably take care of that.",
                     "Ow... I need to watch myself.",
                     "I need to take better care of myself.",
                     "Can't let the pain get the better of me.",
                     "I need to take a moment.");
 
-            putMessages(toml, "health.hurt",
+            putMessagesIfMissing(toml, "health.hurt",
                     "I need to tend to my wounds.",
                     "I'm badly hurt...",
                     "This is getting dangerous.",
@@ -162,7 +183,7 @@ public class ClientDialogueConfig {
                     "I shouldn't keep going like this.",
                     "I should take care of my wounds before things get dangerous.");
 
-            putMessages(toml, "health.near_death",
+            putMessagesIfMissing(toml, "health.near_death",
                     "N-no... this... can't be... be how... I die...",
                     "I can't keep going... T-the pain... it's... too much...",
                     "I-is this... how... I die..?",
@@ -171,7 +192,7 @@ public class ClientDialogueConfig {
                     "P-please... someone... h-help me... I feel... c-cold...",
                     "Help... please... someone... I... I don't... w-want to die... alone...");
 
-            putMessages(toml, "hunger.peckish",
+            putMessagesIfMissing(toml, "hunger.peckish",
                     "I could go for something to eat right now.",
                     "Could do for a snack right about now.",
                     "I'm kinda hungry. Time for a snack?",
@@ -179,7 +200,7 @@ public class ClientDialogueConfig {
                     "A little food would be kinda nice right now.",
                     "Hmm, I should eat something.");
 
-            putMessages(toml, "hunger.hungry",
+            putMessagesIfMissing(toml, "hunger.hungry",
                     "I'm so hungry... I need to eat something.",
                     "I'd love to have something to eat right about now.",
                     "I need to eat something.",
@@ -187,7 +208,7 @@ public class ClientDialogueConfig {
                     "Really could do with a nice meal right now...",
                     "Maybe I can take a moment to eat something?");
 
-            putMessages(toml, "hunger.starving",
+            putMessagesIfMissing(toml, "hunger.starving",
                     "I'm starving...",
                     "I need food... n-now...",
                     "I can't keep m-moving on an empty stomach...",
@@ -195,7 +216,7 @@ public class ClientDialogueConfig {
                     "I-I feel weak... need food...",
                     "I c-could eat a horse right now...");
 
-            putMessages(toml, "air.drowning",
+            putMessagesIfMissing(toml, "air.drowning",
                     "I need air!",
                     "I can't breathe!",
                     "I need to get to the surface!",
@@ -204,25 +225,25 @@ public class ClientDialogueConfig {
                     "My lungs are burning up!",
                     "I need to breathe!");
 
-            putMessages(toml, "damage.small",
+            putMessagesIfMissing(toml, "damage.small",
                     "Ow!",
                     "Ah!",
                     "Tch!",
                     "Gh!",
                     "Oof!");
 
-            putMessages(toml, "damage.medium",
+            putMessagesIfMissing(toml, "damage.medium",
                     "Gah!",
                     "That hurt!",
                     "Ngh!",
                     "Ow, dang it!");
 
-            putMessages(toml, "damage.heavy",
+            putMessagesIfMissing(toml, "damage.heavy",
                     "OW, that hurt!",
                     "AH! That hurts really bad!",
                     "IT HURTS!");
 
-            putMessages(toml, "damage.lethal",
+            putMessagesIfMissing(toml, "damage.lethal",
                     "AAAAAAAH!!",
                     "OOOOOW!",
                     "AAAAAAAAAAAAAAAAAH!!",
@@ -230,25 +251,25 @@ public class ClientDialogueConfig {
                     "THE PAIN IS UNBEARABLE, MAKE IT STOP!!",
                     "AAAAAAAAH IT HURTS SO MUCH!!");
 
-            putMessages(toml, "damage.fire",
+            putMessagesIfMissing(toml, "damage.fire",
                     "It burns!",
                     "I'm on fire!",
                     "Hot hot hot!");
 
-            putMessages(toml, "damage.lava",
+            putMessagesIfMissing(toml, "damage.lava",
                     "AAAAAAAAAAAAAAAA!!");
 
-            putMessages(toml, "damage.lightning",
+            putMessagesIfMissing(toml, "damage.lightning",
                     "AH!",
                     "What the hell was that?!",
                     "I just got struck by lightning!");
 
-            putMessages(toml, "damage.explosion",
+            putMessagesIfMissing(toml, "damage.explosion",
                     "That explosion was too close!",
                     "My ears are ringing!",
                     "I nearly got blown apart!");
 
-            putMessages(toml, "event.wake_up",
+            putMessagesIfMissing(toml, "event.wake_up",
                     "Mmn... I'm awake.",
                     "Another day...",
                     "Rise and shine.",
@@ -261,7 +282,7 @@ public class ClientDialogueConfig {
                     "Time flies, doesn't it? Time to get up.",
                     "One more... no, I should get up.");
 
-            putMessages(toml, "event.eat_good",
+            putMessagesIfMissing(toml, "event.eat_good",
                     "That actually hit the spot.",
                     "I needed that.",
                     "That was pretty good.",
@@ -273,7 +294,7 @@ public class ClientDialogueConfig {
                     "Yummy!",
                     "I like this!");
 
-            putMessages(toml, "event.eat_bad",
+            putMessagesIfMissing(toml, "event.eat_bad",
                     "Ugh... that was a mistake.",
                     "That tasted awful...",
                     "I shouldn't have eaten that.",
@@ -285,7 +306,7 @@ public class ClientDialogueConfig {
                     "I'm gonna be sick...",
                     "I feel like I'm going to throw up...");
 
-            putMessages(toml, "event.eat_neutral",
+            putMessagesIfMissing(toml, "event.eat_neutral",
                     "It'll do.",
                     "Better than nothing.",
                     "At least it's food.",
@@ -296,7 +317,7 @@ public class ClientDialogueConfig {
                     "Meh.",
                     "I'd've liked something better.");
 
-            putMessages(toml, "event.insomnia_warning",
+            putMessagesIfMissing(toml, "event.insomnia_warning",
                     "I should sleep soon...",
                     "I'm starting to feel exhausted.",
                     "If I don't rest soon, something bad might happen.",
@@ -307,7 +328,7 @@ public class ClientDialogueConfig {
                     "I need to sleep...",
                     "I feel like I'm being watched from the corners of my consciousness...");
 
-            putMessages(toml, "event.fear_yelp",
+            putMessagesIfMissing(toml, "event.fear_yelp",
                     "AH!!",
                     "WHAT WAS THAT!?",
                     "THAT WAS TOO CLOSE!",
@@ -316,11 +337,13 @@ public class ClientDialogueConfig {
                     "WHAT IN THE WORLD!?",
                     "THAT WAS WAY TOO CLOSE!");
 
-            YapPoolRegistry.writeMissingClientDefaults(toml);
-            toml.save();
+    }
 
-        } catch (Exception e) {
-            e.printStackTrace();
+    private static void putMessagesIfMissing(CommentedFileConfig toml, String poolId, String... messages) {
+        String path = "pools." + poolId + ".messages";
+
+        if (!toml.contains(path)) {
+            toml.set(path, List.of(messages));
         }
     }
 
@@ -346,7 +369,11 @@ public class ClientDialogueConfig {
     public static void writeMissingExternalDefaults() {
         if (INSTANCE == null || INSTANCE.toml == null) return;
 
-        com.lethimyap.api.YapPoolRegistry.writeMissingClientDefaults(INSTANCE.toml);
+        YapPoolRegistry.writeMissingClientDefaults(INSTANCE.toml);
+        INSTANCE.toml.save();
+
+        Path file = Path.of("config", "lethimyap", "client_dialogue.toml");
+        LAST_MODIFIED = getLastModified(file);
     }
 
     public static void reloadIfChanged() {

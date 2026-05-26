@@ -82,5 +82,13 @@ public class ModNetwork {
                 CustomSpeechPacket::decode,
                 CustomSpeechPacket::handle
         );
+
+        CHANNEL.registerMessage(
+                id++,
+                SyncRuntimeClientLinesPacket.class,
+                SyncRuntimeClientLinesPacket::encode,
+                SyncRuntimeClientLinesPacket::decode,
+                SyncRuntimeClientLinesPacket::handle
+        );
     }
 }

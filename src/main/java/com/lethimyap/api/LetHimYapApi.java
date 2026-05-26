@@ -507,6 +507,34 @@ public class LetHimYapApi {
     }
 
     /**
+     * Disables Let Him Yap's built-in health dialogue pools.
+     *
+     * Useful for mods that replace vanilla health behavior, such as locational
+     * health or body-part damage systems.
+     */
+    public static void disableDefaultHealthPools() {
+        DefaultPoolDisabler.disableHealthPools();
+    }
+
+    /**
+     * Disables Let Him Yap's built-in hunger dialogue pools.
+     *
+     * Useful for mods that replace or heavily alter vanilla hunger behavior.
+     */
+    public static void disableDefaultHungerPools() {
+        DefaultPoolDisabler.disableHungerPools();
+    }
+
+    /**
+     * Disables Let Him Yap's built-in air dialogue pools.
+     *
+     * Useful for mods that replace or heavily alter vanilla breathing/air behavior.
+     */
+    public static void disableDefaultAirPools() {
+        DefaultPoolDisabler.disableAirPools();
+    }
+
+    /**
      * Returns the configured fear event radius.
      *
      * Addons can use this to match Let Him Yap's built-in explosion/lightning

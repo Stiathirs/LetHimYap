@@ -382,6 +382,7 @@ public class PlayerMessageManager {
             ServerMessageConfig config
     ) {
         if (!config.forcedAirMessagesEnabled) return false;
+        if (DefaultPoolDisabler.isGroupDisabled("air")) return false;
 
         boolean lowAir = player.getAirSupply() <= config.forcedAirThreshold;
 
@@ -558,6 +559,8 @@ public class PlayerMessageManager {
 
         for (ServerMessageConfig.Pool pool : allPools) {
             PoolOverrideConfig.PoolView view = PoolOverrideConfig.apply(pool);
+
+            if (DefaultPoolDisabler.isGroupDisabled(pool.group)) continue;
 
             if (!view.enabled) continue;
             if (view.forcedOnly) continue;

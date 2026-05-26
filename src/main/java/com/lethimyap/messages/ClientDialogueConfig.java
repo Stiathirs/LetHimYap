@@ -102,6 +102,13 @@ public class ClientDialogueConfig {
             return "";
         }
 
+        String serverMessage =
+                com.lethimyap.client.ClientServerDialogueConfig.pickMessage(poolId);
+
+        if (serverMessage != null && !serverMessage.isBlank()) {
+            return serverMessage;
+        }
+
         Object value = toml.get("pools." + poolId + ".messages");
 
         if (!(value instanceof List<?> list) || list.isEmpty()) {

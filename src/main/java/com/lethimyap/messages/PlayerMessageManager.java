@@ -48,6 +48,7 @@ public class PlayerMessageManager {
 
         tickDialogueSuppressions(player);
         tickSpeechSlowdowns(player);
+        PoolCooldownManager.tick(player);
 
         if (isDialogueSuppressed(player)) {
             return;
@@ -104,6 +105,8 @@ public class PlayerMessageManager {
                 || chosenView.pool.id.isBlank()) {
             return;
         }
+
+        PoolCooldownManager.applyNormal(player, chosenView);
 
         offerPool(
                 player,
@@ -291,6 +294,17 @@ public class PlayerMessageManager {
     ) {
         if (!player.isAlive()) return;
         if (isDialogueSuppressed(player)) return;
+
+        PoolOverrideConfig.PoolView view = getPoolViewById(poolId);
+
+        if (view != null) {
+            if (!PoolCooldownManager.canUseForced(player, view)) {
+                return;
+            }
+
+            PoolCooldownManager.applyForced(player, view);
+        }
+
         offerPool(player, poolId, important, pain, priority);
     }
 
@@ -396,55 +410,53 @@ public class PlayerMessageManager {
 
         if (alreadyUsed) return false;
 
-        ServerMessageConfig.Pool bestAirPool = null;
+        player.getPersistentData().putBoolean(
+                AIR_FORCED_USED_TAG,
+                true
+        );
 
+        PoolOverrideConfig.PoolView bestAirView = null;
         int bestAirTier = Integer.MIN_VALUE;
-        boolean bestAirImportant = true;
 
         ArrayList<ServerMessageConfig.Pool> allPools = new ArrayList<>();
         allPools.addAll(config.pools);
         allPools.addAll(YapPoolRegistry.getServerPools());
 
         for (ServerMessageConfig.Pool pool : allPools) {
+            if (pool == null) continue;
+            if (pool.group == null) continue;
+
             PoolOverrideConfig.PoolView view =
                     PoolOverrideConfig.apply(pool);
 
+            if (view == null) continue;
             if (!view.enabled) continue;
             if (!view.forcedOnly) continue;
             if (!"air".equals(pool.group)) continue;
             if (!view.matches(player)) continue;
+            if (!PoolCooldownManager.canUseForced(player, view)) continue;
 
-            if (bestAirPool == null) {
-                bestAirPool = pool;
+            if (bestAirView == null || view.tier > bestAirTier) {
+                bestAirView = view;
                 bestAirTier = view.tier;
-                bestAirImportant = view.important;
-                continue;
-            }
-
-            if (view.tier > bestAirTier) {
-                bestAirPool = pool;
-                bestAirTier = view.tier;
-                bestAirImportant = view.important;
             }
         }
 
-        if (bestAirPool == null
-                || bestAirPool.id == null
-                || bestAirPool.id.isBlank()) {
+        if (bestAirView == null
+                || bestAirView.pool == null
+                || bestAirView.pool.id == null
+                || bestAirView.pool.id.isBlank()) {
             return false;
         }
 
+        PoolCooldownManager.applyForced(player, bestAirView);
+
         offerPool(
                 player,
-                bestAirPool.id,
-                bestAirImportant,
+                bestAirView.pool.id,
+                bestAirView.important,
                 false,
                 YapPriority.EVENT
-        );
-
-        player.getPersistentData().putBoolean(
-                AIR_FORCED_USED_TAG,
-                true
         );
 
         return true;
@@ -565,6 +577,7 @@ public class PlayerMessageManager {
             if (!view.enabled) continue;
             if (view.forcedOnly) continue;
             if (!view.matches(player)) continue;
+            if (!PoolCooldownManager.canUseNormal(player, view)) continue;
 
             PoolOverrideConfig.PoolView current = bestByGroup.get(pool.group);
 
@@ -789,5 +802,24 @@ public class PlayerMessageManager {
         }
 
         return highest;
+    }
+
+    private static PoolOverrideConfig.PoolView getPoolViewById(String poolId) {
+        if (poolId == null || poolId.isBlank()) return null;
+
+        ServerMessageConfig config = ServerMessageConfig.get();
+
+        ArrayList<ServerMessageConfig.Pool> allPools = new ArrayList<>();
+        allPools.addAll(config.pools);
+        allPools.addAll(YapPoolRegistry.getServerPools());
+
+        for (ServerMessageConfig.Pool pool : allPools) {
+            if (pool == null || pool.id == null) continue;
+            if (!pool.id.equals(poolId)) continue;
+
+            return PoolOverrideConfig.apply(pool);
+        }
+
+        return null;
     }
 }

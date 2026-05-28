@@ -6,6 +6,7 @@ import com.lethimyap.LetHimYap;
 import com.lethimyap.api.LetHimYapApi;
 import com.lethimyap.api.YapPoolRegistry;
 import com.lethimyap.messages.PlayerMessageManager;
+import com.lethimyap.messages.PoolCooldownManager;
 import com.lethimyap.messages.PoolOverrideConfig;
 import com.lethimyap.messages.ServerMessageConfig;
 import net.minecraft.network.chat.Component;
@@ -248,6 +249,24 @@ public class YapDebugCommands {
                                     );
 
                                     for (PoolOverrideConfig.PoolView view : pools) {
+                                        int poolCooldown =
+                                                PoolCooldownManager.getNormalPoolCooldown(
+                                                        player,
+                                                        view.pool.id
+                                                );
+
+                                        int groupCooldown =
+                                                PoolCooldownManager.getGroupCooldown(
+                                                        player,
+                                                        view.pool.group
+                                                );
+
+                                        int lastTier =
+                                                PoolCooldownManager.getGroupLastTier(
+                                                        player,
+                                                        view.pool.group
+                                                );
+
                                         ctx.getSource().sendSuccess(
                                                 () -> Component.literal(
                                                         "- " + view.pool.id
@@ -255,6 +274,9 @@ public class YapDebugCommands {
                                                                 + " | tier=" + view.tier
                                                                 + " | weight=" + view.weight
                                                                 + " | important=" + view.important
+                                                                + " | cooldown=" + poolCooldown
+                                                                + " | groupCooldown=" + groupCooldown
+                                                                + " | lastTier=" + lastTier
                                                 ),
                                                 false
                                         );
@@ -299,6 +321,88 @@ public class YapDebugCommands {
 
                                     return pools.size();
                                 })
+                        )
+
+                        .then(Commands.literal("poolstatus")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+                                    ServerMessageConfig config = ServerMessageConfig.get();
+
+                                    ArrayList<ServerMessageConfig.Pool> allPools = new ArrayList<>();
+                                    allPools.addAll(config.pools);
+                                    allPools.addAll(YapPoolRegistry.getServerPools());
+
+                                    for (ServerMessageConfig.Pool pool : allPools) {
+                                        PoolOverrideConfig.PoolView view =
+                                                PoolOverrideConfig.apply(pool);
+
+                                        boolean matches = view.matches(player);
+                                        boolean canUseNormal =
+                                                PoolCooldownManager.canUseNormal(player, view);
+
+                                        int poolCooldown =
+                                                PoolCooldownManager.getNormalPoolCooldown(player, view.pool.id);
+
+                                        int groupCooldown =
+                                                PoolCooldownManager.getGroupCooldown(player, view.pool.group);
+
+                                        int lastTier =
+                                                PoolCooldownManager.getGroupLastTier(player, view.pool.group);
+
+                                        ctx.getSource().sendSuccess(
+                                                () -> Component.literal(
+                                                        "- " + view.pool.id
+                                                                + " | enabled=" + view.enabled
+                                                                + " | forcedOnly=" + view.forcedOnly
+                                                                + " | tier=" + view.tier
+                                                                + " | weight=" + view.weight
+                                                                + " | matches=" + matches
+                                                                + " | canUseNormal=" + canUseNormal
+                                                                + " | cooldown=" + poolCooldown
+                                                                + " | groupCooldown=" + groupCooldown
+                                                                + " | lastTier=" + lastTier
+                                                ),
+                                                false
+                                        );
+                                    }
+
+                                    return allPools.size();
+                                })
+                        )
+
+                        .then(Commands.literal("clearcooldowns")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    ServerPlayer player = ctx.getSource().getPlayerOrException();
+
+                                    PoolCooldownManager.clear(player);
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Cleared Let Him Yap cooldowns for " + player.getGameProfile().getName() + "."),
+                                            true
+                                    );
+
+                                    return 1;
+                                })
+                        )
+
+                        .then(Commands.literal("clearcooldowns_player")
+                                .requires(source -> source.hasPermission(2))
+                                .then(Commands.argument("player", EntityArgument.player())
+                                        .executes(ctx -> {
+                                            ServerPlayer player = EntityArgument.getPlayer(ctx, "player");
+
+                                            PoolCooldownManager.clear(player);
+
+                                            ctx.getSource().sendSuccess(
+                                                    () -> Component.literal("Cleared Let Him Yap cooldowns for " + player.getGameProfile().getName() + "."),
+                                                    true
+                                            );
+
+                                            return 1;
+                                        })
+                                )
                         )
         );
     }

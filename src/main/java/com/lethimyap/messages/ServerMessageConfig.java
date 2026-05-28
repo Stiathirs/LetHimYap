@@ -236,7 +236,10 @@ public class ServerMessageConfig {
         config.pools.add(Pool.hunger("hunger.hungry", "hunger", 2, 20, true, false, 10));
         config.pools.add(Pool.hunger("hunger.starving", "hunger", 3, 50, true, false, 4));
 
-        config.pools.add(Pool.air("air.drowning", "air", 1, true, 120));
+        Pool air = Pool.air("air.drowning", "air", 1, true, 120);
+        air.forcedCooldownMinTicks = 100;
+        air.forcedCooldownMaxTicks = 100;
+        config.pools.add(air);
 
         DamagePool small = new DamagePool("damage.small", 1.0f, 0.65, false);
         small.excludedDamageTypes.add("minecraft:fall");
@@ -282,6 +285,11 @@ public class ServerMessageConfig {
         public int weight;
         public boolean important = true;
         public boolean forcedOnly = false;
+        public int cooldownMinTicks = 3600;
+        public int cooldownMaxTicks = 3600;
+
+        public int forcedCooldownMinTicks = 0;
+        public int forcedCooldownMaxTicks = 0;
 
         public PoolConditionMode conditionMode = PoolConditionMode.AND;
         public ArrayList<PoolCondition> conditions = new ArrayList<>();
@@ -457,6 +465,10 @@ public class ServerMessageConfig {
             pool.important = important;
             pool.forcedOnly = forcedOnly;
             pool.conditionMode = PoolConditionMode.AND;
+            pool.cooldownMinTicks = 3600;
+            pool.cooldownMaxTicks = 3600;
+            pool.forcedCooldownMinTicks = 0;
+            pool.forcedCooldownMaxTicks = 0;
             return pool;
         }
 

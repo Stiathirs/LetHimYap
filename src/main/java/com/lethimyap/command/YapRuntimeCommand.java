@@ -25,6 +25,23 @@ public class YapRuntimeCommand {
         register(event.getDispatcher());
     }
 
+    private static void applyCooldowns(
+            ServerMessageConfig.Pool pool,
+            int cooldownMinTicks,
+            int cooldownMaxTicks,
+            int forcedCooldownMinTicks,
+            int forcedCooldownMaxTicks
+    ) {
+        pool.cooldownMinTicks = Math.max(0, cooldownMinTicks);
+        pool.cooldownMaxTicks = Math.max(pool.cooldownMinTicks, cooldownMaxTicks);
+
+        pool.forcedCooldownMinTicks = Math.max(0, forcedCooldownMinTicks);
+        pool.forcedCooldownMaxTicks = Math.max(
+                pool.forcedCooldownMinTicks,
+                forcedCooldownMaxTicks
+        );
+    }
+
     private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
                 Commands.literal("yap-runtime")
@@ -85,6 +102,69 @@ public class YapRuntimeCommand {
                                         )
                                 )
 
+                                .then(Commands.literal("always_cooldown")
+                                        .then(Commands.argument("id", StringArgumentType.string())
+                                                .then(Commands.argument("group", StringArgumentType.string())
+                                                        .then(Commands.argument("tier", IntegerArgumentType.integer())
+                                                                .then(Commands.argument("weight", IntegerArgumentType.integer())
+                                                                        .then(Commands.argument("important", BoolArgumentType.bool())
+                                                                                .then(Commands.argument("forcedOnly", BoolArgumentType.bool())
+                                                                                        .then(Commands.argument("cooldownMinTicks", IntegerArgumentType.integer(0))
+                                                                                                .then(Commands.argument("cooldownMaxTicks", IntegerArgumentType.integer(0))
+                                                                                                        .then(Commands.argument("forcedCooldownMinTicks", IntegerArgumentType.integer(0))
+                                                                                                                .then(Commands.argument("forcedCooldownMaxTicks", IntegerArgumentType.integer(0))
+                                                                                                                        .executes(ctx -> {
+                                                                                                                            String id = StringArgumentType.getString(ctx, "id");
+                                                                                                                            String group = StringArgumentType.getString(ctx, "group");
+                                                                                                                            int tier = IntegerArgumentType.getInteger(ctx, "tier");
+                                                                                                                            int weight = IntegerArgumentType.getInteger(ctx, "weight");
+                                                                                                                            boolean important = BoolArgumentType.getBool(ctx, "important");
+                                                                                                                            boolean forcedOnly = BoolArgumentType.getBool(ctx, "forcedOnly");
+
+                                                                                                                            int cooldownMinTicks = IntegerArgumentType.getInteger(ctx, "cooldownMinTicks");
+                                                                                                                            int cooldownMaxTicks = IntegerArgumentType.getInteger(ctx, "cooldownMaxTicks");
+                                                                                                                            int forcedCooldownMinTicks = IntegerArgumentType.getInteger(ctx, "forcedCooldownMinTicks");
+                                                                                                                            int forcedCooldownMaxTicks = IntegerArgumentType.getInteger(ctx, "forcedCooldownMaxTicks");
+
+                                                                                                                            ServerMessageConfig.Pool pool =
+                                                                                                                                    ServerMessageConfig.Pool.always(
+                                                                                                                                            id,
+                                                                                                                                            group,
+                                                                                                                                            tier,
+                                                                                                                                            weight,
+                                                                                                                                            important,
+                                                                                                                                            forcedOnly
+                                                                                                                                    );
+
+                                                                                                                            applyCooldowns(
+                                                                                                                                    pool,
+                                                                                                                                    cooldownMinTicks,
+                                                                                                                                    cooldownMaxTicks,
+                                                                                                                                    forcedCooldownMinTicks,
+                                                                                                                                    forcedCooldownMaxTicks
+                                                                                                                            );
+
+                                                                                                                            RuntimePoolRegistry.registerPool(pool);
+
+                                                                                                                            ctx.getSource().sendSuccess(
+                                                                                                                                    () -> Component.literal("Registered runtime always pool with cooldowns: " + id),
+                                                                                                                                    true
+                                                                                                                            );
+
+                                                                                                                            return 1;
+                                                                                                                        })
+                                                                                                                )
+                                                                                                        )
+                                                                                                )
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+
                                 .then(Commands.literal("nbt_number")
                                         .then(Commands.argument("id", StringArgumentType.string())
                                                 .then(Commands.argument("group", StringArgumentType.string())
@@ -130,6 +210,84 @@ public class YapRuntimeCommand {
 
                                                                                                                     return 1;
                                                                                                                 })
+                                                                                                        )
+                                                                                                )
+                                                                                        )
+                                                                                )
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                        )
+                                )
+
+                                .then(Commands.literal("nbt_number_cooldown")
+                                        .then(Commands.argument("id", StringArgumentType.string())
+                                                .then(Commands.argument("group", StringArgumentType.string())
+                                                        .then(Commands.argument("tier", IntegerArgumentType.integer())
+                                                                .then(Commands.argument("weight", IntegerArgumentType.integer())
+                                                                        .then(Commands.argument("important", BoolArgumentType.bool())
+                                                                                .then(Commands.argument("forcedOnly", BoolArgumentType.bool())
+                                                                                        .then(Commands.argument("nbtPath", StringArgumentType.string())
+                                                                                                .then(Commands.argument("compare", StringArgumentType.string())
+                                                                                                        .then(Commands.argument("value", DoubleArgumentType.doubleArg())
+                                                                                                                .then(Commands.argument("cooldownMinTicks", IntegerArgumentType.integer(0))
+                                                                                                                        .then(Commands.argument("cooldownMaxTicks", IntegerArgumentType.integer(0))
+                                                                                                                                .then(Commands.argument("forcedCooldownMinTicks", IntegerArgumentType.integer(0))
+                                                                                                                                        .then(Commands.argument("forcedCooldownMaxTicks", IntegerArgumentType.integer(0))
+                                                                                                                                                .executes(ctx -> {
+                                                                                                                                                    String id = StringArgumentType.getString(ctx, "id");
+                                                                                                                                                    String group = StringArgumentType.getString(ctx, "group");
+                                                                                                                                                    int tier = IntegerArgumentType.getInteger(ctx, "tier");
+                                                                                                                                                    int weight = IntegerArgumentType.getInteger(ctx, "weight");
+                                                                                                                                                    boolean important = BoolArgumentType.getBool(ctx, "important");
+                                                                                                                                                    boolean forcedOnly = BoolArgumentType.getBool(ctx, "forcedOnly");
+                                                                                                                                                    String nbtPath = StringArgumentType.getString(ctx, "nbtPath");
+                                                                                                                                                    String compare = StringArgumentType.getString(ctx, "compare");
+                                                                                                                                                    double value = DoubleArgumentType.getDouble(ctx, "value");
+
+                                                                                                                                                    int cooldownMinTicks = IntegerArgumentType.getInteger(ctx, "cooldownMinTicks");
+                                                                                                                                                    int cooldownMaxTicks = IntegerArgumentType.getInteger(ctx, "cooldownMaxTicks");
+                                                                                                                                                    int forcedCooldownMinTicks = IntegerArgumentType.getInteger(ctx, "forcedCooldownMinTicks");
+                                                                                                                                                    int forcedCooldownMaxTicks = IntegerArgumentType.getInteger(ctx, "forcedCooldownMaxTicks");
+
+                                                                                                                                                    ServerMessageConfig.Pool pool =
+                                                                                                                                                            ServerMessageConfig.Pool.custom(
+                                                                                                                                                                    id,
+                                                                                                                                                                    group,
+                                                                                                                                                                    tier,
+                                                                                                                                                                    weight,
+                                                                                                                                                                    important,
+                                                                                                                                                                    forcedOnly,
+                                                                                                                                                                    PoolConditionMode.AND,
+                                                                                                                                                                    PoolCondition.nbtNumber(
+                                                                                                                                                                            nbtPath,
+                                                                                                                                                                            compare,
+                                                                                                                                                                            value
+                                                                                                                                                                    )
+                                                                                                                                                            );
+
+                                                                                                                                                    applyCooldowns(
+                                                                                                                                                            pool,
+                                                                                                                                                            cooldownMinTicks,
+                                                                                                                                                            cooldownMaxTicks,
+                                                                                                                                                            forcedCooldownMinTicks,
+                                                                                                                                                            forcedCooldownMaxTicks
+                                                                                                                                                    );
+
+                                                                                                                                                    RuntimePoolRegistry.registerPool(pool);
+
+                                                                                                                                                    ctx.getSource().sendSuccess(
+                                                                                                                                                            () -> Component.literal("Registered runtime NBT pool with cooldowns: " + id),
+                                                                                                                                                            true
+                                                                                                                                                    );
+
+                                                                                                                                                    return 1;
+                                                                                                                                                })
+                                                                                                                                        )
+                                                                                                                                )
+                                                                                                                        )
+                                                                                                                )
                                                                                                         )
                                                                                                 )
                                                                                         )

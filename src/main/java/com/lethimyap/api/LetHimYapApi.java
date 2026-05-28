@@ -308,6 +308,43 @@ public class LetHimYapApi {
     }
 
     /**
+     * Sets normal and forced cooldown ranges for a dialogue pool.
+     *
+     * Normal cooldowns apply to random dialogue selection.
+     * Forced cooldowns apply only to forced pool dialogue.
+     *
+     * Forced dialogue does not trigger normal cooldowns.
+     * Normal dialogue does not trigger forced cooldowns.
+     *
+     * Higher-tier pools in the same group may bypass lower-tier group cooldowns.
+     *
+     * Values below 0 are treated as 0.
+     * Max values below min values are raised to the min value.
+     */
+    public static ServerMessageConfig.Pool setPoolCooldowns(
+            ServerMessageConfig.Pool pool,
+            int cooldownMinTicks,
+            int cooldownMaxTicks,
+            int forcedCooldownMinTicks,
+            int forcedCooldownMaxTicks
+    ) {
+        if (pool == null) {
+            return null;
+        }
+
+        pool.cooldownMinTicks = Math.max(0, cooldownMinTicks);
+        pool.cooldownMaxTicks = Math.max(pool.cooldownMinTicks, cooldownMaxTicks);
+
+        pool.forcedCooldownMinTicks = Math.max(0, forcedCooldownMinTicks);
+        pool.forcedCooldownMaxTicks = Math.max(
+                pool.forcedCooldownMinTicks,
+                forcedCooldownMaxTicks
+        );
+
+        return pool;
+    }
+
+    /**
      * Adds default client-side dialogue lines for a pool.
      *
      * These are written to client_dialogue.toml if that pool does not already

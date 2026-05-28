@@ -50,6 +50,30 @@ public class PoolOverrideConfig {
                     putIfMissing(toml, base + ".forcedOnly", pool.forcedOnly);
                     putIfMissing(toml, base + ".conditionMode", pool.conditionMode.name());
                     putIfMissing(toml, base + ".conditions", writeConditions(pool.conditions));
+                    putIfMissing(toml, base + ".cooldownMinTicks", pool.cooldownMinTicks);
+                    putIfMissing(toml, base + ".cooldownMaxTicks", pool.cooldownMaxTicks);
+                    putIfMissing(toml, base + ".forcedCooldownMinTicks", pool.forcedCooldownMinTicks);
+                    putIfMissing(toml, base + ".forcedCooldownMaxTicks", pool.forcedCooldownMaxTicks);
+
+                    toml.setComment(
+                            base + ".cooldownMinTicks",
+                            "Minimum normal dialogue cooldown in ticks. Higher-tier pools in the same group may bypass lower-tier cooldowns."
+                    );
+
+                    toml.setComment(
+                            base + ".cooldownMaxTicks",
+                            "Maximum normal dialogue cooldown in ticks."
+                    );
+
+                    toml.setComment(
+                            base + ".forcedCooldownMinTicks",
+                            "Minimum forced dialogue cooldown in ticks. Forced dialogue ignores normal cooldowns."
+                    );
+
+                    toml.setComment(
+                            base + ".forcedCooldownMaxTicks",
+                            "Maximum forced dialogue cooldown in ticks."
+                    );
                 }
 
                 toml.setComment(
@@ -127,6 +151,24 @@ public class PoolOverrideConfig {
                                 pool.conditions
                         );
 
+                int cooldownMinTicks =
+                        getInt(toml, base + ".cooldownMinTicks", pool.cooldownMinTicks);
+
+                int cooldownMaxTicks =
+                        getInt(toml, base + ".cooldownMaxTicks", pool.cooldownMaxTicks);
+
+                int forcedCooldownMinTicks =
+                        getInt(toml, base + ".forcedCooldownMinTicks", pool.forcedCooldownMinTicks);
+
+                int forcedCooldownMaxTicks =
+                        getInt(toml, base + ".forcedCooldownMaxTicks", pool.forcedCooldownMaxTicks);
+
+                cooldownMinTicks = Math.max(0, cooldownMinTicks);
+                cooldownMaxTicks = Math.max(cooldownMinTicks, cooldownMaxTicks);
+
+                forcedCooldownMinTicks = Math.max(0, forcedCooldownMinTicks);
+                forcedCooldownMaxTicks = Math.max(forcedCooldownMinTicks, forcedCooldownMaxTicks);
+
                 return new PoolView(
                         pool,
                         getBool(toml, base + ".enabled", true),
@@ -135,7 +177,11 @@ public class PoolOverrideConfig {
                         getBool(toml, base + ".important", pool.important),
                         getBool(toml, base + ".forcedOnly", pool.forcedOnly),
                         conditionMode,
-                        conditions
+                        conditions,
+                        cooldownMinTicks,
+                        cooldownMaxTicks,
+                        forcedCooldownMinTicks,
+                        forcedCooldownMaxTicks
                 );
             }
 
@@ -198,6 +244,10 @@ public class PoolOverrideConfig {
         public final boolean forcedOnly;
         public final PoolConditionMode conditionMode;
         public final ArrayList<PoolCondition> conditions;
+        public final int cooldownMinTicks;
+        public final int cooldownMaxTicks;
+        public final int forcedCooldownMinTicks;
+        public final int forcedCooldownMaxTicks;
 
         public PoolView(
                 ServerMessageConfig.Pool pool,
@@ -207,7 +257,11 @@ public class PoolOverrideConfig {
                 boolean important,
                 boolean forcedOnly,
                 PoolConditionMode conditionMode,
-                ArrayList<PoolCondition> conditions
+                ArrayList<PoolCondition> conditions,
+                int cooldownMinTicks,
+                int cooldownMaxTicks,
+                int forcedCooldownMinTicks,
+                int forcedCooldownMaxTicks
         ) {
             this.pool = pool;
             this.enabled = enabled;
@@ -221,6 +275,11 @@ public class PoolOverrideConfig {
             this.conditions = conditions == null
                     ? new ArrayList<>()
                     : conditions;
+
+            this.cooldownMinTicks = cooldownMinTicks;
+            this.cooldownMaxTicks = cooldownMaxTicks;
+            this.forcedCooldownMinTicks = forcedCooldownMinTicks;
+            this.forcedCooldownMaxTicks = forcedCooldownMaxTicks;
         }
 
         public static PoolView from(ServerMessageConfig.Pool pool) {
@@ -232,7 +291,11 @@ public class PoolOverrideConfig {
                     pool.important,
                     pool.forcedOnly,
                     pool.conditionMode,
-                    copyConditions(pool.conditions)
+                    copyConditions(pool.conditions),
+                    pool.cooldownMinTicks,
+                    pool.cooldownMaxTicks,
+                    pool.forcedCooldownMinTicks,
+                    pool.forcedCooldownMaxTicks
             );
         }
 
@@ -245,7 +308,11 @@ public class PoolOverrideConfig {
                     false,
                     false,
                     PoolConditionMode.AND,
-                    new ArrayList<>()
+                    new ArrayList<PoolCondition>(),
+                    0,
+                    0,
+                    0,
+                    0
             );
         }
 

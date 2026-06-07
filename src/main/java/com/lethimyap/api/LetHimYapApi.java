@@ -148,6 +148,13 @@ public class LetHimYapApi {
     }
 
     /**
+     * Starts building a dialogue pool using the recommended builder-style API.
+     */
+    public static YapPoolBuilder pool(String id) {
+        return new YapPoolBuilder(id);
+    }
+
+    /**
      * Registers a condition-based dialogue pool using the multi-condition system.
      *
      * Pools can combine conditions using:
@@ -156,7 +163,10 @@ public class LetHimYapApi {
      * - XOR
      *
      * If conditionMode is null, AND is used.
+     * 
+     * @deprecated Prefer {@link #pool(String)} for new integrations.
      */
+    @Deprecated(forRemoval = false)
     public static void registerConditionPool(
             String id,
             String group,
@@ -203,7 +213,11 @@ public class LetHimYapApi {
      *
      * Source-number pools query values from registered condition sources instead
      * of reading persistent NBT.
+     * 
+     * @deprecated Prefer {@link #pool(String)} with
+     * {@link #sourceNumberCondition(String, String, double)}.
      */
+    @Deprecated(forRemoval = true)
     public static void registerSourceNumberPool(
             String id,
             String group,
@@ -279,7 +293,11 @@ public class LetHimYapApi {
 
     /**
      * Creates an NBT-number condition.
+     * 
+     * @deprecated Prefer {@link #pool(String)} with
+     * {@link #nbtNumberCondition(String, String, double)}.
      */
+    @Deprecated(forRemoval = true)
     public static PoolCondition nbtNumberCondition(
             String nbtPath,
             String compare,

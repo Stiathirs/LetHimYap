@@ -375,6 +375,28 @@ public class LetHimYapApi {
     }
 
     /**
+     * Registers a server-side dialogue placeholder.
+     *
+     * Placeholders are written in dialogue lines using braces:
+     *
+     * {mymod:placeholder}
+     *
+     * When a client selects a line containing the placeholder, the server calls
+     * the registered resolver and replaces the placeholder before replicating
+     * dialogue to other clients.
+     *
+     * Resolver return values are converted to strings.
+     *
+     * Unknown placeholders are left unchanged.
+     */
+    public static void registerPlaceholder(
+            String id,
+            YapPlaceholderResolver resolver
+    ) {
+        PlaceholderRegistry.register(id, resolver);
+    }
+
+    /**
      * Registers or updates a damage reaction pool.
      *
      * If the pool ID does not exist, it is created.

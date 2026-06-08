@@ -142,6 +142,8 @@ public class PlayerMessageManager {
         if (message == null || message.isBlank()) return;
 
         if (isDialogueSuppressed(player)) return;
+        
+        message = PlaceholderRegistry.resolve(player, message);
 
         int maxLength = ServerMessageConfig.get().maxDialogueLength;
 

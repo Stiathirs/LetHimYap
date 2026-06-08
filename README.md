@@ -89,7 +89,7 @@ Addon mods can:
 *   force contextual dialogue
 *   add compatibility integrations
 *   define custom reactions dynamically
-*   and more things I'm too lazy to state here. I'll make a page all about it later, trust.
+*   and more things I'm too lazy to state here. Look, just check out the [wiki page](https://github.com/Stiathirs/LetHimYap/wiki/API), alright? If you're here, you probably don't need me to babysit you.
 
 ***
 

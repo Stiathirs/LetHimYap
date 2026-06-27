@@ -1,14 +1,17 @@
 package com.lethimyap.command;
 
 import java.util.ArrayList;
+import java.util.List;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.lethimyap.LetHimYap;
 import com.lethimyap.api.LetHimYapApi;
 import com.lethimyap.api.YapPoolRegistry;
+import com.lethimyap.messages.PlaceholderRegistry;
 import com.lethimyap.messages.PlayerMessageManager;
 import com.lethimyap.messages.PoolCooldownManager;
 import com.lethimyap.messages.PoolOverrideConfig;
 import com.lethimyap.messages.ServerMessageConfig;
+import com.lethimyap.messages.TextMutationRegistry;
 import net.minecraft.network.chat.Component;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
@@ -403,6 +406,50 @@ public class YapDebugCommands {
                                             return 1;
                                         })
                                 )
+                        )
+
+                        .then(Commands.literal("mutations")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    List<String> mutations =
+                                            TextMutationRegistry.getRegisteredMutationDescriptions();
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Registered text mutations (" + mutations.size() + "):"),
+                                            false
+                                    );
+
+                                    for (String mutation : mutations) {
+                                        ctx.getSource().sendSuccess(
+                                                () -> Component.literal("- " + mutation),
+                                                false
+                                        );
+                                    }
+
+                                    return mutations.size();
+                                })
+                        )
+
+                        .then(Commands.literal("placeholders")
+                                .requires(source -> source.hasPermission(2))
+                                .executes(ctx -> {
+                                    List<String> placeholders =
+                                            PlaceholderRegistry.getRegisteredPlaceholderIds();
+
+                                    ctx.getSource().sendSuccess(
+                                            () -> Component.literal("Registered placeholders (" + placeholders.size() + "):"),
+                                            false
+                                    );
+
+                                    for (String placeholder : placeholders) {
+                                        ctx.getSource().sendSuccess(
+                                                () -> Component.literal("- " + placeholder),
+                                                false
+                                        );
+                                    }
+
+                                    return placeholders.size();
+                                })
                         )
         );
     }

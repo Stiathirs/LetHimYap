@@ -209,42 +209,6 @@ public class LetHimYapApi {
     }
 
     /**
-     * Convenience helper for source-number condition pools.
-     *
-     * Source-number pools query values from registered condition sources instead
-     * of reading persistent NBT.
-     * 
-     * @deprecated Prefer {@link #pool(String)} with
-     * {@link #sourceNumberCondition(String, String, double)}.
-     */
-    @Deprecated(forRemoval = true)
-    public static void registerSourceNumberPool(
-            String id,
-            String group,
-            int tier,
-            int weight,
-            boolean important,
-            boolean forcedOnly,
-            String source,
-            String compare,
-            double value
-    ) {
-        YapPoolRegistry.registerServerPool(
-                ServerMessageConfig.Pool.sourceNumber(
-                        id,
-                        group,
-                        tier,
-                        weight,
-                        important,
-                        forcedOnly,
-                        source,
-                        compare,
-                        value
-                )
-        );
-    }
-
-    /**
      * Creates an always-valid condition.
      */
     public static PoolCondition alwaysCondition() {
@@ -289,25 +253,6 @@ public class LetHimYapApi {
             double value
     ) {
         return PoolCondition.air(compare, value);
-    }
-
-    /**
-     * Creates an NBT-number condition.
-     * 
-     * @deprecated Prefer {@link #pool(String)} with
-     * {@link #nbtNumberCondition(String, String, double)}.
-     */
-    @Deprecated(forRemoval = true)
-    public static PoolCondition nbtNumberCondition(
-            String nbtPath,
-            String compare,
-            double value
-    ) {
-        return PoolCondition.nbtNumber(
-                nbtPath,
-                compare,
-                value
-        );
     }
 
     /**
@@ -465,6 +410,32 @@ public class LetHimYapApi {
      */
     public static void addGlobalDamageBlacklist(String... damageTypes) {
         YapPoolRegistry.addGlobalDamageBlacklist(damageTypes);
+    }
+
+    /**
+     * Registers a server-side text mutation.
+     *
+     * Text mutations run after placeholders are resolved and before dialogue is
+     * truncated/replicated.
+     *
+     * Mutations are applied in ascending priority order.
+     * Lower priority numbers run earlier.
+     *
+     * If multiple mutations use the same ID, the latest registration replaces the
+     * previous one.
+     */
+    public static void registerTextMutation(
+            String id,
+            int priority,
+            YapTextMutationCondition condition,
+            YapTextMutator mutator
+    ) {
+        TextMutationRegistry.register(
+                id,
+                priority,
+                condition,
+                mutator
+        );
     }
 
     /**

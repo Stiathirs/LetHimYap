@@ -65,34 +65,46 @@ public class EventDialogueEvents {
 
         player.getPersistentData().putInt(INSOMNIA_WARNING_COOLDOWN, 0);
 
-        long sleepStart = player.getPersistentData().getLong(SLEEP_START_TIME);
-        long now = player.level().getGameTime();
+        boolean successfulSleep = !event.updateLevel();
 
-        if (sleepStart > 0 && now > sleepStart) {
-            long sleptTicks = now - sleepStart;
+        if (successfulSleep) {
+            long sleepStart = player.getPersistentData().getLong(SLEEP_START_TIME);
+            long now = player.level().getGameTime();
 
-            double adrenalineLost =
-                    sleptTicks * config.adrenalineDecayPerTick;
+            if (sleepStart > 0 && now > sleepStart) {
+                long sleptTicks = now - sleepStart;
 
-            LetHimYapApi.removeAdrenaline(player, adrenalineLost);
+                double adrenalineLost =
+                        sleptTicks * config.adrenalineDecayPerTick;
+
+                LetHimYapApi.removeAdrenaline(player, adrenalineLost);
+            }
+
+            LetHimYapApi.addSpeechSlowdown(
+                    player,
+                    WAKE_UP_SLOWDOWN_KEY,
+                    100,
+                    3.0
+            );
+
+            PlayerMessageManager.forcePool(
+                    player,
+                    "event.wake_up",
+                    true,
+                    false,
+                    YapPriority.EVENT
+            );
+        } else {
+            PlayerMessageManager.forcePool(
+                    player,
+                    "event.sleep_interrupted",
+                    false,
+                    false,
+                    YapPriority.EVENT
+            );
         }
 
         player.getPersistentData().remove(SLEEP_START_TIME);
-
-        LetHimYapApi.addSpeechSlowdown(
-                player,
-                WAKE_UP_SLOWDOWN_KEY,
-                100,
-                3.0
-        );
-
-        PlayerMessageManager.forcePool(
-                player,
-                "event.wake_up",
-                true,
-                false,
-                YapPriority.EVENT
-        );
     }
 
     @SubscribeEvent

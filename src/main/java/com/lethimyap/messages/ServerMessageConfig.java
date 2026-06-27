@@ -236,6 +236,8 @@ public class ServerMessageConfig {
         config.pools.add(Pool.hunger("hunger.hungry", "hunger", 2, 20, true, false, 10));
         config.pools.add(Pool.hunger("hunger.starving", "hunger", 3, 50, true, false, 4));
 
+        config.pools.add(Pool.always("event.sleep_interrupted", "event.sleep", 1, 0, false, true));
+
         Pool air = Pool.air("air.drowning", "air", 1, true, 120);
         air.forcedCooldownMinTicks = 100;
         air.forcedCooldownMaxTicks = 100;

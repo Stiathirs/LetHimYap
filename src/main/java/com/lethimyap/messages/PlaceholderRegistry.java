@@ -7,6 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PlaceholderRegistry {
     private static final Pattern PLACEHOLDER_PATTERN =
@@ -71,5 +73,9 @@ public class PlaceholderRegistry {
         matcher.appendTail(result);
 
         return result.toString();
+    }
+
+    public static List<String> getRegisteredPlaceholderIds() {
+        return new ArrayList<>(RESOLVERS.keySet());
     }
 }

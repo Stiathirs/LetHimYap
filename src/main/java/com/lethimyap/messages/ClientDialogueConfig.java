@@ -282,6 +282,14 @@ public class ClientDialogueConfig {
                     "Time flies, doesn't it? Time to get up.",
                     "One more... no, I should get up.");
 
+            putMessagesIfMissing(toml, "event.sleep_interrupted",
+                    "Huh? What happened?",
+                    "Can't I get any rest?",
+                    "Ugh... I'm awake.",
+                    "Why am I awake?",
+                    "Something woke me up...",
+                    "I can't ever catch a break, can I?");
+
             putMessagesIfMissing(toml, "event.eat_good",
                     "That actually hit the spot.",
                     "I needed that.",

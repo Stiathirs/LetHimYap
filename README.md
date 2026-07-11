@@ -12,7 +12,9 @@ Designed for immersion-heavy modpacks, survival experiences, roleplay servers, a
 
 # Note
 
-This mod is currently in an open public beta. What you see is very much currently in development. Expect stuff to not always work. Features subject to change.
+This mod recently released. Expect stuff to not always work.
+
+I'll rewrite this decription later. I just can't be bothered right now.
 
 Also yeah uhh so basically this mod came into existence from a gimmick pack i was making and this message i sent a friend on discord
 

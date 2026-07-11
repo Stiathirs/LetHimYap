@@ -5,6 +5,7 @@ import com.lethimyap.api.YapPoolRegistry;
 import com.lethimyap.api.YapPriority;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.event.entity.living.LivingDamageEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -17,7 +18,7 @@ public class DamageReactionEvents {
 
     private static final Random RANDOM = new Random();
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void onPlayerDamage(LivingDamageEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) return;
 

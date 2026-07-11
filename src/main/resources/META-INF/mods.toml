@@ -29,5 +29,13 @@ versionRange="[1.20.1]"
 ordering="NONE"
 side="BOTH"
 
+# Band-aid fix for Casualties: Cubed
+[[dependencies.lethimyap]]
+modId="casualties_cubed"
+mandatory=false
+versionRange="[1,)"
+ordering="BEFORE"
+side="BOTH"
+
 [[mixins]]
 config="lethimyap.mixins.json"

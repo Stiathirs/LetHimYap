@@ -13,8 +13,8 @@ public class ServerMessageConfig {
 
     public boolean enabled = true;
 
-    public int maxDialogueLength = 120;
-    public static final int DEFAULT_MAX_DIALOGUE_LENGTH = 120;
+    public int maxDialogueLength = 512;
+    public static final int DEFAULT_MAX_DIALOGUE_LENGTH = 512;
 
     public int minTicksBetweenMessages = 400;
     public int maxTicksBetweenMessages = 1200;

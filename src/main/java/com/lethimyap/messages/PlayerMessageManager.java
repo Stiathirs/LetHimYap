@@ -216,7 +216,12 @@ public class PlayerMessageManager {
                     : thought.fullMessage;
 
             thought.visibleMessage = displayed;
-            show(player, displayed, color);
+            show(
+                    player,
+                    displayed,
+                    displayed,
+                    color
+            );
 
             if (important) {
                 saveLastWords(player, displayed);
@@ -465,23 +470,43 @@ public class PlayerMessageManager {
         return true;
     }
 
-    private static void showActiveThought(ServerPlayer player, ActiveThought thought) {
-        show(player, thought.visibleMessage, thought.color);
+    private static void showActiveThought(
+            ServerPlayer player,
+            ActiveThought thought
+    ) {
+        boolean muffled = UnderwaterSpeechFilter.shouldMuffleSpeech(player);
+
+        String fullDisplayedMessage = muffled
+                ? thought.garbledFullMessage
+                : thought.fullMessage;
+
+        show(
+                player,
+                thought.visibleMessage,
+                fullDisplayedMessage,
+                thought.color
+        );
     }
 
-    private static void show(ServerPlayer player, String message, DialogueColor color) {
+    private static void show(
+            ServerPlayer player,
+            String message,
+            String fullMessage,
+            DialogueColor color
+    ) {
         ServerMessageConfig config = ServerMessageConfig.get();
 
         ModNetwork.CHANNEL.send(
                 PacketDistributor.PLAYER.with(() -> player),
                 new SyncSpeechHudPacket(
                         message,
+                        fullMessage,
                         color.id,
                         config.floatingMessageTicks
                 )
         );
 
-        FloatingMessageManager.set(player, message, color);
+        FloatingMessageManager.set(player, message, fullMessage, color);
     }
 
     private static int getDelayForHealth(

@@ -6,12 +6,20 @@ import com.lethimyap.messages.ServerMessageConfig;
 public class ClientSpeechHudData {
 
     public static String text = "";
+    public static String fullText = "";
     public static DialogueColor color = DialogueColor.WHITE;
     public static int ticks = 0;
     public static int maxTicks = 0;
 
-    public static void set(String message, String colorId, int duration) {
+    public static void set(
+            String message,
+            String fullMessage,
+            String colorId,
+            int duration
+    ) {
         text = message == null ? "" : message;
+        fullText = fullMessage == null ? text : fullMessage;
+
         color = DialogueColor.fromString(colorId);
         ticks = Math.max(0, duration);
         maxTicks = ticks;
@@ -24,11 +32,15 @@ public class ClientSpeechHudData {
 
         if (ticks <= 0) {
             text = "";
+            fullText = "";
         }
     }
 
     public static float alpha() {
-        int fadeTicks = Math.max(1, ServerMessageConfig.get().floatingMessageFadeTicks);
+        int fadeTicks = Math.max(
+                1,
+                ServerMessageConfig.get().floatingMessageFadeTicks
+        );
 
         if (ticks <= 0) return 0.0f;
         if (ticks >= fadeTicks) return 1.0f;

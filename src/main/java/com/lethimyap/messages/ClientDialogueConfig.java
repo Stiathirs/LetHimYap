@@ -19,6 +19,10 @@ public class ClientDialogueConfig {
     public String lastWordsAnchor = "center";
     public int lastWordsOffset = -20;
 
+    public int hudMaxWidth = 320;
+    public int overheadMaxWidth = 180;
+    public int lastWordsMaxWidth = 300;
+
     public double overheadYOffset = 0.65D;
     public float overheadScale = 0.025F;
 
@@ -61,6 +65,18 @@ public class ClientDialogueConfig {
 
             config.toml.load();
 
+            if (!config.toml.contains("rendering.hudMaxWidth")) {
+                config.toml.set("rendering.hudMaxWidth", 320);
+            }
+
+            if (!config.toml.contains("rendering.overheadMaxWidth")) {
+                config.toml.set("rendering.overheadMaxWidth", 180);
+            }
+
+            if (!config.toml.contains("lastWords.maxWidth")) {
+                config.toml.set("lastWords.maxWidth", 300);
+            }
+
             writeBuiltInDefaults(config.toml);
             YapPoolRegistry.writeMissingClientDefaults(config.toml);
 
@@ -75,11 +91,12 @@ public class ClientDialogueConfig {
             config.overheadYOffset = getDouble(config.toml, "rendering.overheadYOffset", config.overheadYOffset);
             config.overheadScale = (float) getDouble(config.toml, "rendering.overheadScale", config.overheadScale);
 
-            config.lastWordsAnchor =
-                    getString(config.toml, "lastWords.anchor", config.lastWordsAnchor);
+            config.hudMaxWidth = getInt(config.toml, "rendering.hudMaxWidth", config.hudMaxWidth);
+            config.overheadMaxWidth = getInt(config.toml, "rendering.overheadMaxWidth", config.overheadMaxWidth);
 
-            config.lastWordsOffset =
-                    getInt(config.toml, "lastWords.offset", config.lastWordsOffset);
+            config.lastWordsAnchor = getString(config.toml, "lastWords.anchor", config.lastWordsAnchor);
+            config.lastWordsOffset = getInt(config.toml, "lastWords.offset", config.lastWordsOffset);
+            config.lastWordsMaxWidth = getInt(config.toml, "lastWords.maxWidth", config.lastWordsMaxWidth);
 
             if (!config.hudAnchor.equalsIgnoreCase("top")
                     && !config.hudAnchor.equalsIgnoreCase("bottom")) {
@@ -135,8 +152,10 @@ public class ClientDialogueConfig {
             toml.setComment("rendering", "Client-side dialogue rendering settings. hudAnchor can be \"top\" or \"bottom\".");
             toml.set("rendering.hudAnchor", "bottom");
             toml.set("rendering.hudEdgeDistance", 68);
+            toml.set("rendering.hudMaxWidth", 320);
             toml.set("rendering.overheadYOffset", 0.75D);
             toml.set("rendering.overheadScale", 0.025F);
+            toml.set("rendering.overheadMaxWidth", 180);
 
             toml.setComment(
                     "lastWords",
@@ -156,6 +175,7 @@ public class ClientDialogueConfig {
 
             toml.set("lastWords.anchor", "center");
             toml.set("lastWords.offset", -20);
+            toml.set("lastWords.maxWidth", 300);
 
             writeBuiltInDefaults(toml);
 

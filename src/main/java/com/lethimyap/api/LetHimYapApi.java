@@ -256,6 +256,21 @@ public class LetHimYapApi {
     }
 
     /**
+     * Creates an NBT-number condition.
+     */
+public static PoolCondition nbtNumberCondition(
+        String nbtPath,
+        String compare,
+        double value
+) {
+    return PoolCondition.nbtNumber(
+            nbtPath,
+            compare,
+            value
+    );
+}
+
+    /**
      * Creates a source-number condition.
      */
     public static PoolCondition sourceNumberCondition(

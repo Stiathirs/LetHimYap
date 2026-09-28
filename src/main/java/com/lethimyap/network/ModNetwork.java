@@ -90,5 +90,13 @@ public class ModNetwork {
                 SyncRuntimeClientLinesPacket::decode,
                 SyncRuntimeClientLinesPacket::handle
         );
+
+        CHANNEL.registerMessage(
+                id++,
+                SyncVoiceSelectionPacket.class,
+                SyncVoiceSelectionPacket::encode,
+                SyncVoiceSelectionPacket::decode,
+                SyncVoiceSelectionPacket::handle
+        );
     }
 }

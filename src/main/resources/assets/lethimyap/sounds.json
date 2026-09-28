@@ -1,10 +1,31 @@
 {
-  "yap": {
+  "click": {
     "sounds": [
-      {
-        "name": "lethimyap:yap",
-        "attenuation_distance": 24
-      }
+      "lethimyap:click"
+    ]
+  },
+
+  "beep": {
+    "sounds": [
+      "lethimyap:beep"
+    ]
+  },
+
+  "buzz": {
+    "sounds": [
+      "lethimyap:buzz"
+    ]
+  },
+
+  "clack": {
+    "sounds": [
+      "lethimyap:clack"
+    ]
+  },
+
+  "keyboard": {
+    "sounds": [
+      "lethimyap:keyboard"
     ]
   }
 }

@@ -11,9 +11,10 @@ public class ClientFloatingTextData {
 
     private static final Map<UUID, FloatingText> TEXTS = new HashMap<>();
 
-    public static void set(UUID playerId, String text, String color, int ticks) {
+    public static void set(UUID playerId, String text, String fullText, String color, int ticks) {
         TEXTS.put(playerId, new FloatingText(
                 text,
+                fullText,
                 DialogueColor.fromString(color),
                 ticks
         ));
@@ -43,12 +44,14 @@ public class ClientFloatingTextData {
 
     public static class FloatingText {
         public final String text;
+        public final String fullText;
         public final DialogueColor color;
         public int ticks;
         public final int maxTicks;
 
-        public FloatingText(String text, DialogueColor color, int ticks) {
+        public FloatingText(String text, String fullText, DialogueColor color, int ticks) {
             this.text = text;
+            this.fullText = fullText;
             this.color = color;
             this.ticks = ticks;
             this.maxTicks = ticks;

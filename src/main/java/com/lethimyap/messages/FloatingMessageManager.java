@@ -7,7 +7,7 @@ import net.minecraftforge.network.PacketDistributor;
 
 public class FloatingMessageManager {
 
-    public static void set(ServerPlayer player, String message, DialogueColor color) {
+    public static void set(ServerPlayer player, String message, String fullMessage, DialogueColor color) {
         ServerMessageConfig config = ServerMessageConfig.get();
 
         ModNetwork.CHANNEL.send(
@@ -15,6 +15,7 @@ public class FloatingMessageManager {
                 new SyncFloatingTextPacket(
                         player.getUUID(),
                         message,
+                        fullMessage,
                         color.id,
                         config.floatingMessageTicks,
                         false
@@ -31,6 +32,7 @@ public class FloatingMessageManager {
                 PacketDistributor.TRACKING_ENTITY_AND_SELF.with(() -> player),
                 new SyncFloatingTextPacket(
                         player.getUUID(),
+                        "",
                         "",
                         DialogueColor.WHITE.id,
                         0,

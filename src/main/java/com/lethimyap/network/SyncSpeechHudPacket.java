@@ -9,17 +9,25 @@ import java.util.function.Supplier;
 public class SyncSpeechHudPacket {
 
     private final String message;
+    private final String fullMessage;
     private final String color;
     private final int ticks;
 
-    public SyncSpeechHudPacket(String message, String color, int ticks) {
+    public SyncSpeechHudPacket(
+            String message,
+            String fullMessage,
+            String color,
+            int ticks
+    ) {
         this.message = message;
+        this.fullMessage = fullMessage;
         this.color = color;
         this.ticks = ticks;
     }
 
     public static void encode(SyncSpeechHudPacket msg, FriendlyByteBuf buf) {
         buf.writeUtf(msg.message);
+        buf.writeUtf(msg.fullMessage);
         buf.writeUtf(msg.color);
         buf.writeInt(msg.ticks);
     }
@@ -28,13 +36,22 @@ public class SyncSpeechHudPacket {
         return new SyncSpeechHudPacket(
                 buf.readUtf(),
                 buf.readUtf(),
+                buf.readUtf(),
                 buf.readInt()
         );
     }
 
-    public static void handle(SyncSpeechHudPacket msg, Supplier<NetworkEvent.Context> ctx) {
+    public static void handle(
+            SyncSpeechHudPacket msg,
+            Supplier<NetworkEvent.Context> ctx
+    ) {
         ctx.get().enqueueWork(() ->
-                ClientSpeechHudData.set(msg.message, msg.color, msg.ticks)
+                ClientSpeechHudData.set(
+                        msg.message,
+                        msg.fullMessage,
+                        msg.color,
+                        msg.ticks
+                )
         );
 
         ctx.get().setPacketHandled(true);

@@ -34,9 +34,6 @@ public class ServerMessageConfig {
     public float typewriterSoundPitchMin = 0.9f;
     public float typewriterSoundPitchMax = 1.15f;
 
-    // This cannot be changed. It shouldn't be. Things WILL break if it is.
-    public String typewriterSound = "lethimyap:yap";
-
     public boolean adrenalineEnabled = true;
     public double adrenalineMax = 100.0;
     public double adrenalineGainPerDamage = 6.0;
@@ -119,8 +116,7 @@ public class ServerMessageConfig {
                 config.typewriterMinDelayTicks = getInt(toml, "typewriter.minDelayTicks", config.typewriterMinDelayTicks);
                 config.typewriterMaxDelayTicks = getInt(toml, "typewriter.maxDelayTicks", config.typewriterMaxDelayTicks);
                 config.typewriterHealthSlowdownPower = getDouble(toml, "typewriter.healthSlowdownPower", config.typewriterHealthSlowdownPower);
-                config.typewriterSlowdownStartHealthPercent =
-                        getDouble(toml, "typewriter.slowdownStartHealthPercent", config.typewriterSlowdownStartHealthPercent);
+                config.typewriterSlowdownStartHealthPercent = getDouble(toml, "typewriter.slowdownStartHealthPercent", config.typewriterSlowdownStartHealthPercent);
 
                 config.typewriterSoundEnabled = getBool(toml, "sound.enabled", config.typewriterSoundEnabled);
                 config.typewriterSoundVolume = (float) getDouble(toml, "sound.volume", config.typewriterSoundVolume);
@@ -198,7 +194,7 @@ public class ServerMessageConfig {
             toml.set("adrenaline.decayPerTick", adrenalineDecayPerTick);
             toml.set("adrenaline.maxSlowdownReduction", adrenalineMaxSlowdownReduction);
 
-            toml.setComment("sound", "Sound is played from the speaking player. Volume 1.5 is roughly 24 blocks.");
+            toml.setComment("sound", "Voice playback settings. The speaking player's selected voice determines the sound. Volume 1.5 is roughly 24 blocks.");
             toml.set("sound.enabled", typewriterSoundEnabled);
             toml.set("sound.volume", typewriterSoundVolume);
             toml.set("sound.pitchMin", typewriterSoundPitchMin);

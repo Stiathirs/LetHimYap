@@ -2,11 +2,13 @@ package com.lethimyap.messages;
 
 import com.lethimyap.api.YapPoolRegistry;
 import com.lethimyap.api.YapPriority;
+import com.lethimyap.api.YapVoice;
+import com.lethimyap.api.YapVoiceRegistry;
 import com.lethimyap.network.ModNetwork;
 import com.lethimyap.network.OfferDialoguePoolPacket;
 import com.lethimyap.network.SyncLastWordsPacket;
 import com.lethimyap.network.SyncSpeechHudPacket;
-import net.minecraft.resources.ResourceLocation;
+
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -28,6 +30,7 @@ public class PlayerMessageManager {
     private static final String PAIN_DIALOGUE_GRACE_TAG = "lethimyap_pain_dialogue_grace";
     private static final String SUPPRESSIONS_TAG = "lethimyap_dialogue_suppressions";
     private static final String SLOWDOWNS_TAG = "lethimyap_dialogue_slowdowns";
+    private static final String VOICE_TAG = "LetHimYapVoice";
 
     private static final Random RANDOM = new Random();
     private static final Map<UUID, ActiveThought> ACTIVE = new HashMap<>();
@@ -562,18 +565,17 @@ public class PlayerMessageManager {
         if (!config.typewriterSoundEnabled) return;
         if (Character.isWhitespace(addedChar)) return;
 
-        ResourceLocation soundId = ResourceLocation.tryParse(config.typewriterSound);
+        YapVoice voice = getPlayerVoice(player);
+        if (voice == null) return;
 
-        if (soundId == null) return;
-
-        SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(soundId);
+        SoundEvent sound = ForgeRegistries.SOUND_EVENTS.getValue(voice.soundId());
 
         if (sound == null) return;
 
         float minPitch = config.typewriterSoundPitchMin;
-        float maxPitch = Math.max(minPitch, config.typewriterSoundPitchMax);
-
-        float pitch = minPitch + RANDOM.nextFloat() * (maxPitch - minPitch);
+        float maxPitch = config.typewriterSoundPitchMax;
+        float variation = minPitch + RANDOM.nextFloat() * (maxPitch - minPitch);
+        float pitch = voice.basePitch() * variation;
 
         player.level().playSound(
                 null,
@@ -849,5 +851,31 @@ public class PlayerMessageManager {
         }
 
         return null;
+    }
+
+    public static void setPlayerVoice(
+            ServerPlayer player,
+            String voiceId
+    ) {
+        if (player == null || voiceId == null || voiceId.isBlank()) return;
+
+        player.getPersistentData().putString(
+                VOICE_TAG,
+                voiceId
+        );
+    }
+
+    private static YapVoice getPlayerVoice(ServerPlayer player) {
+        String voiceId =
+                player.getPersistentData().getString(
+                        VOICE_TAG
+                );
+
+        YapVoice voice =
+                YapVoiceRegistry.get(voiceId);
+
+        return voice != null
+                ? voice
+                : YapVoiceRegistry.getDefault();
     }
 }

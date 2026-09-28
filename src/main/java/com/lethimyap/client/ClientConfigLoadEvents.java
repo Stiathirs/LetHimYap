@@ -2,6 +2,9 @@ package com.lethimyap.client;
 
 import com.lethimyap.LetHimYap;
 import com.lethimyap.messages.ClientDialogueConfig;
+import com.lethimyap.network.ModNetwork;
+import com.lethimyap.network.SyncVoiceSelectionPacket;
+
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ClientPlayerNetworkEvent;
 import net.minecraftforge.event.TickEvent;
@@ -16,7 +19,14 @@ public class ClientConfigLoadEvents {
 
     @SubscribeEvent
     public static void onClientPlayerLoggedIn(ClientPlayerNetworkEvent.LoggingIn event) {
-        ClientDialogueConfig.get();
+        ClientDialogueConfig config =
+                ClientDialogueConfig.get();
+
+        ModNetwork.CHANNEL.sendToServer(
+                new SyncVoiceSelectionPacket(
+                        config.voice
+                )
+        );
     }
 
     @SubscribeEvent

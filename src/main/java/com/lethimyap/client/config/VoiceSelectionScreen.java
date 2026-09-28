@@ -1,0 +1,338 @@
+package com.lethimyap.client.config;
+
+import com.lethimyap.api.YapVoice;
+import com.lethimyap.api.YapVoiceRegistry;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.network.chat.Component;
+import net.minecraftforge.fml.ModList;
+
+import java.util.List;
+import java.util.function.Consumer;
+
+public class VoiceSelectionScreen extends YapConfigScreen {
+
+    private final Screen parent;
+    private final String selectedVoice;
+    private final Consumer<String> onSelect;
+
+    private final VoicePreviewController preview = new VoicePreviewController();
+
+    private String hoveredDescription;
+
+    public VoiceSelectionScreen(
+            Screen parent,
+            String selectedVoice,
+            Consumer<String> onSelect
+    ) {
+        super(Component.literal("Select Voice"));
+
+        this.parent = parent;
+        this.selectedVoice = selectedVoice;
+        this.onSelect = onSelect;
+    }
+
+    @Override
+    protected void init() {
+        VoiceList list =
+                new VoiceList(
+                        minecraft,
+                        width,
+                        height,
+                        42,
+                        height - 36,
+                        24,
+                        YapVoiceRegistry.getVoices(),
+                        this
+                );
+
+        addRenderableWidget(list);
+
+        addRenderableWidget(
+                Button.builder(
+                        Component.literal("Cancel"),
+                        button -> onClose()
+                ).bounds(
+                        width / 2 - 100,
+                        height - 28,
+                        200,
+                        20
+                ).build()
+        );
+    }
+
+    @Override
+    public void tick() {
+        super.tick();
+        preview.tick();
+    }
+
+    private void preview(YapVoice voice) {
+        preview.start(
+                voice.id().toString()
+        );
+    }
+
+    private void choose(YapVoice voice) {
+        preview.stop();
+
+        onSelect.accept(
+                voice.id().toString()
+        );
+
+        minecraft.setScreen(parent);
+    }
+
+    @Override
+    public void render(
+            GuiGraphics graphics,
+            int mouseX,
+            int mouseY,
+            float partialTick
+    ) {
+        hoveredDescription = null;
+
+        renderBackground(graphics);
+
+        super.render(
+                graphics,
+                mouseX,
+                mouseY,
+                partialTick
+        );
+
+        graphics.drawCenteredString(
+                font,
+                title,
+                width / 2,
+                16,
+                0xFFFFFF
+        );
+
+        if (hoveredDescription != null
+                && !hoveredDescription.isBlank()) {
+
+            graphics.renderTooltip(
+                    font,
+                    font.split(
+                            Component.literal(
+                                    hoveredDescription
+                            ),
+                            240
+                    ),
+                    mouseX,
+                    mouseY
+            );
+        }
+    }
+
+    @Override
+    public void onClose() {
+        preview.stop();
+        minecraft.setScreen(parent);
+    }
+
+    private static class VoiceList
+            extends ContainerObjectSelectionList<VoiceList.Entry> {
+
+        private final VoiceSelectionScreen screen;
+
+        public VoiceList(
+                Minecraft minecraft,
+                int width,
+                int height,
+                int top,
+                int bottom,
+                int itemHeight,
+                List<YapVoice> voices,
+                VoiceSelectionScreen screen
+        ) {
+            super(
+                    minecraft,
+                    width,
+                    height,
+                    top,
+                    bottom,
+                    itemHeight
+            );
+
+            this.screen = screen;
+
+            String lastNamespace = null;
+
+            for (YapVoice voice : voices) {
+                String namespace =
+                        voice.id().getNamespace();
+
+                if (!namespace.equals(lastNamespace)) {
+                    addEntry(
+                            new HeaderEntry(
+                                    getModName(namespace),
+                                    screen
+                            )
+                    );
+
+                    lastNamespace = namespace;
+                }
+
+                addEntry(
+                        new VoiceEntry(
+                                voice,
+                                screen
+                        )
+                );
+            }
+        }
+
+        private static String getModName(String namespace) {
+            return ModList.get()
+                    .getModContainerById(namespace)
+                    .map(container ->
+                            container.getModInfo().getDisplayName()
+                    )
+                    .orElse(namespace);
+        }
+
+        private abstract static class Entry
+                extends ContainerObjectSelectionList.Entry<Entry> {
+        }
+
+        private static class HeaderEntry extends Entry {
+
+            private final String name;
+            private final VoiceSelectionScreen screen;
+
+            private HeaderEntry(
+                    String name,
+                    VoiceSelectionScreen screen
+            ) {
+                this.name = name;
+                this.screen = screen;
+            }
+
+            @Override
+            public void render(
+                    GuiGraphics graphics,
+                    int index,
+                    int top,
+                    int left,
+                    int width,
+                    int height,
+                    int mouseX,
+                    int mouseY,
+                    boolean hovered,
+                    float partialTick
+            ) {
+                graphics.drawCenteredString(
+                        screen.font,
+                        name,
+                        left + width / 2,
+                        top + 7,
+                        0xA0A0A0
+                );
+            }
+
+            @Override
+            public List<? extends GuiEventListener> children() {
+                return List.of();
+            }
+
+            @Override
+            public List<? extends NarratableEntry> narratables() {
+                return List.of();
+            }
+        }
+
+        private static class VoiceEntry extends Entry {
+
+            private final YapVoice voice;
+            private final VoiceSelectionScreen screen;
+
+            private final Button selectButton;
+            private final Button previewButton;
+
+            private VoiceEntry(
+                    YapVoice voice,
+                    VoiceSelectionScreen screen
+            ) {
+                this.voice = voice;
+                this.screen = screen;
+
+                selectButton =
+                        Button.builder(
+                                Component.literal(voice.displayName()),
+                                clicked -> screen.choose(voice)
+                        ).bounds(
+                                0,
+                                0,
+                                174,
+                                20
+                        ).build();
+
+                previewButton =
+                        Button.builder(
+                                Component.literal("▶"),
+                                clicked -> screen.preview(voice)
+                        ).bounds(
+                                0,
+                                0,
+                                20,
+                                20
+                        ).build();
+            }
+
+            @Override
+            public void render(
+                    GuiGraphics graphics,
+                    int index,
+                    int top,
+                    int left,
+                    int width,
+                    int height,
+                    int mouseX,
+                    int mouseY,
+                    boolean hovered,
+                    float partialTick
+            ) {
+                int totalWidth = 200;
+                int x = left + (width - totalWidth) / 2;
+
+                selectButton.setX(x);
+                selectButton.setY(top);
+
+                previewButton.setX(x + 180);
+                previewButton.setY(top);
+
+                selectButton.render(graphics, mouseX, mouseY, partialTick);
+                previewButton.render(graphics, mouseX, mouseY, partialTick);
+
+                if (selectButton.isMouseOver(mouseX, mouseY)) {
+                    screen.hoveredDescription = voice.description();
+                } else if (previewButton.isMouseOver(mouseX, mouseY)) {
+                    screen.hoveredDescription = "Preview";
+                }
+            }
+
+            @Override
+            public List<? extends GuiEventListener> children() {
+                return List.of(
+                        selectButton,
+                        previewButton
+                );
+            }
+
+            @Override
+            public List<? extends NarratableEntry> narratables() {
+                return List.of(
+                        selectButton,
+                        previewButton
+                );
+            }
+        }
+    }
+}

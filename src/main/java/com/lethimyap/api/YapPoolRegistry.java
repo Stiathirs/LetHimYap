@@ -159,6 +159,23 @@ public class YapPoolRegistry {
         toml.save();
     }
 
+    public static List<String> getClientDefaultLines(
+            String poolId
+    ) {
+        if (poolId == null || poolId.isBlank()) {
+            return List.of();
+        }
+
+        List<String> lines =
+                CLIENT_DEFAULT_LINES.get(poolId);
+
+        if (lines == null || lines.isEmpty()) {
+            return List.of();
+        }
+
+        return List.copyOf(lines);
+    }
+
     public static void registerVanillaGlobalDamageBlacklistDefaults() {
         addGlobalDamageBlacklist(
                 "minecraft:campfire",

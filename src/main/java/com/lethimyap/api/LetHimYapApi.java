@@ -1,6 +1,7 @@
 package com.lethimyap.api;
 
 import com.lethimyap.messages.*;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -684,5 +685,44 @@ public class LetHimYapApi {
             YapPriority priority
     ) {
         return PlayerMessageManager.canStartDialogue(player, priority);
+    }
+
+    /** 
+     * Registers a new voice using a registered sound.
+     */
+    public static void registerVoice(
+            String id,
+            String displayName,
+            String description,
+            String soundId,
+            float basePitch
+    ) {
+        ResourceLocation voiceId =
+                ResourceLocation.tryParse(id);
+
+        if (voiceId == null) {
+            throw new IllegalArgumentException(
+                    "Invalid voice ID: " + id
+            );
+        }
+
+        ResourceLocation voiceSoundId =
+                ResourceLocation.tryParse(soundId);
+
+        if (voiceSoundId == null) {
+            throw new IllegalArgumentException(
+                    "Invalid voice sound ID: " + soundId
+            );
+        }
+
+        YapVoiceRegistry.register(
+                new YapVoice(
+                        voiceId,
+                        displayName,
+                        description,
+                        voiceSoundId,
+                        basePitch
+                )
+        );
     }
 }

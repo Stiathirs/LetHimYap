@@ -1,8 +1,44 @@
 {
-  "yap": {
+  "click": {
     "sounds": [
       {
-        "name": "lethimyap:yap",
+        "name": "lethimyap:click",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+
+  "beep": {
+    "sounds": [
+      {
+        "name": "lethimyap:beep",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+
+  "buzz": {
+    "sounds": [
+      {
+        "name": "lethimyap:buzz",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+
+  "clack": {
+    "sounds": [
+      {
+        "name": "lethimyap:clack",
+        "attenuation_distance": 24
+      }
+    ]
+  },
+
+  "keyboard": {
+    "sounds": [
+      {
+        "name": "lethimyap:keyboard",
         "attenuation_distance": 24
       }
     ]

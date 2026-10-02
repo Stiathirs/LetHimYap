@@ -13,6 +13,7 @@ import net.minecraft.network.chat.Component;
 public class ClientConfigScreen extends YapConfigScreen {
 
     private final Screen parent;
+    Minecraft client = Minecraft.getInstance();
 
     public ClientConfigScreen(Screen parent) {
         super(Component.literal("Let Him Yap"));
@@ -47,9 +48,9 @@ public class ClientConfigScreen extends YapConfigScreen {
         );
 
         boolean hasWorld =
-                this.minecraft.level != null
-                        && this.minecraft.player != null
-                        && this.minecraft.getConnection() != null;
+                client.level != null
+                        && client.player != null
+                        && client.getConnection() != null;
 
         Button serverDialogueButton =
                 Button.builder(
@@ -90,13 +91,13 @@ public class ClientConfigScreen extends YapConfigScreen {
                 Button.builder(
                         Component.literal("Import"),
                         button -> {
-                            String json = this.minecraft.keyboardHandler.getClipboard();
+                            String json = client.keyboardHandler.getClipboard();
 
                             ClientConfigProfileIO.ImportResult result = ClientConfigProfileIO.parseImport(json);
 
                             if (!result.isValid()) {
                                 SystemToast.add(
-                                        this.minecraft.getToasts(),
+                                        client.getToasts(),
                                         SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
                                         Component.literal("Import Failed"),
                                         Component.literal(result.error())
@@ -133,7 +134,7 @@ public class ClientConfigScreen extends YapConfigScreen {
                             String json =
                                     ClientConfigProfileIO.exportToJson();
 
-                            this.minecraft.keyboardHandler
+                            client.keyboardHandler
                                     .setClipboard(json);
                         }
                 )

@@ -1,7 +1,8 @@
 package com.lethimyap.registry;
 
 import com.lethimyap.LetHimYap;
-import com.lethimyap.effect.SilencedEffect;
+import com.lethimyap.effects.SilencedEffect;
+
 import net.minecraft.world.effect.MobEffect;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;

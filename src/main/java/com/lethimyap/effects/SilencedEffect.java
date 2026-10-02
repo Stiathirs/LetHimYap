@@ -1,4 +1,4 @@
-package com.lethimyap.effect;
+package com.lethimyap.effects;
 
 import com.lethimyap.api.LetHimYapApi;
 import net.minecraft.server.level.ServerPlayer;

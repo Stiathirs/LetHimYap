@@ -1,7 +1,14 @@
 package com.lethimyap.client.config;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+
 import com.lethimyap.api.YapVoice;
 import com.lethimyap.api.YapVoiceRegistry;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -12,11 +19,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.ModList;
 
-import java.util.List;
-import java.util.function.Consumer;
-
 public class VoiceSelectionScreen extends YapConfigScreen {
-
     private final Screen parent;
     private final String selectedVoice;
     private final Consumer<String> onSelect;
@@ -163,29 +166,20 @@ public class VoiceSelectionScreen extends YapConfigScreen {
 
             this.screen = screen;
 
-            String lastNamespace = null;
+            Map<String, List<YapVoice>> groupedVoices = new LinkedHashMap<>();
 
             for (YapVoice voice : voices) {
-                String namespace =
-                        voice.id().getNamespace();
+                groupedVoices
+                        .computeIfAbsent(voice.id().getNamespace(), namespace -> new ArrayList<>())
+                        .add(voice);
+            }
 
-                if (!namespace.equals(lastNamespace)) {
-                    addEntry(
-                            new HeaderEntry(
-                                    getModName(namespace),
-                                    screen
-                            )
-                    );
+            for (Map.Entry<String, List<YapVoice>> group : groupedVoices.entrySet()) {
+                addEntry(new HeaderEntry(getModName(group.getKey()), screen));
 
-                    lastNamespace = namespace;
+                for (YapVoice voice : group.getValue()) {
+                    addEntry(new VoiceEntry(voice, screen));
                 }
-
-                addEntry(
-                        new VoiceEntry(
-                                voice,
-                                screen
-                        )
-                );
             }
         }
 

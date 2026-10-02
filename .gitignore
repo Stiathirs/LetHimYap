@@ -27,3 +27,6 @@ forge*changelog.txt
 
 # VS Code specific files
 .vscode/
+
+# IDK why there now exists a test folder, what the hell extension did I install??
+src/test/

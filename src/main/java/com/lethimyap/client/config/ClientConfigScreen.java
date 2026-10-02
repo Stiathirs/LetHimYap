@@ -1,15 +1,14 @@
 package com.lethimyap.client.config;
 
-import com.lethimyap.client.config.ClientConfigProfileIO;
+import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.util.List;
 
 public class ClientConfigScreen extends YapConfigScreen {
 
@@ -28,7 +27,7 @@ public class ClientConfigScreen extends YapConfigScreen {
         addRenderableWidget(
                 Button.builder(
                         Component.literal("General Settings"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new GeneralSettingsScreen(this)
                         )
                 )
@@ -39,7 +38,7 @@ public class ClientConfigScreen extends YapConfigScreen {
         addRenderableWidget(
                 Button.builder(
                         Component.literal("Dialogue Lines"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new DialogueGroupScreen(this)
                         )
                 )
@@ -55,7 +54,7 @@ public class ClientConfigScreen extends YapConfigScreen {
         Button serverDialogueButton =
                 Button.builder(
                         Component.literal("Server Dialogue"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new ServerDialogueGroupScreen(this)
                         )
                 )
@@ -79,7 +78,7 @@ public class ClientConfigScreen extends YapConfigScreen {
         addRenderableWidget(
                 Button.builder(
                         Component.literal("Voice"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new VoiceConfigScreen(this)
                         )
                 )
@@ -109,7 +108,7 @@ public class ClientConfigScreen extends YapConfigScreen {
                             List<String> unknownPools =
                                     ClientConfigProfileIO.findUnknownPools(result.profile());
 
-                            this.minecraft.setScreen(
+                            Minecraft.getInstance().setScreen(
                                     new ClientProfileImportConfirmScreen(this, result.profile(), unknownPools)
                             );
                         }
@@ -185,6 +184,6 @@ public class ClientConfigScreen extends YapConfigScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 }

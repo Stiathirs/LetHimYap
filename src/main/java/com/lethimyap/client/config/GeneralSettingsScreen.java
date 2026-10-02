@@ -2,7 +2,9 @@ package com.lethimyap.client.config;
 
 import com.lethimyap.messages.ClientDialogueConfig;
 import com.lethimyap.messages.DialogueColor;
+
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -662,18 +664,18 @@ public class GeneralSettingsScreen extends YapConfigScreen {
                 );
 
         if (saved) {
-            this.minecraft.setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
         }
     }
 
     private void discardAndExit() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 
     @Override
     public void onClose() {
         if (!dirty) {
-            this.minecraft.setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
             return;
         }
 

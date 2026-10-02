@@ -1,13 +1,13 @@
 package com.lethimyap.client.config;
 
+import java.util.List;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
 import net.minecraftforge.fml.ModList;
-
-import java.util.List;
 
 public class DialogueGroupScreen extends YapConfigScreen {
 
@@ -32,12 +32,7 @@ public class DialogueGroupScreen extends YapConfigScreen {
                         this.height - 36,
                         24,
                         groups,
-                        group -> this.minecraft.setScreen(
-                                new DialoguePoolScreen(
-                                        this,
-                                        group
-                                )
-                        )
+                        group -> Minecraft.getInstance().setScreen(new DialoguePoolScreen(this,group))
                 );
 
         addRenderableWidget(list);
@@ -82,7 +77,7 @@ public class DialogueGroupScreen extends YapConfigScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 
     static String prettify(String id) {

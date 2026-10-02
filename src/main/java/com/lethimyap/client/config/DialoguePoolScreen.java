@@ -1,11 +1,12 @@
 package com.lethimyap.client.config;
 
+import java.util.List;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.util.List;
 
 public class DialoguePoolScreen extends YapConfigScreen {
 
@@ -38,7 +39,7 @@ public class DialoguePoolScreen extends YapConfigScreen {
                         this.height - 36,
                         24,
                         pools,
-                        pool -> this.minecraft.setScreen(
+                        pool -> Minecraft.getInstance().setScreen(
                                 new DialogueLineScreen(
                                         this,
                                         group,
@@ -92,6 +93,6 @@ public class DialoguePoolScreen extends YapConfigScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 }

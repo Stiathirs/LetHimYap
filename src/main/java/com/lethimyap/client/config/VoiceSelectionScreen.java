@@ -174,7 +174,33 @@ public class VoiceSelectionScreen extends YapConfigScreen {
                         .add(voice);
             }
 
-            for (Map.Entry<String, List<YapVoice>> group : groupedVoices.entrySet()) {
+            List<YapVoice> defaultVoices = groupedVoices.remove("lethimyap");
+
+            if (defaultVoices != null) {
+                addEntry(new HeaderEntry(getModName("lethimyap"), screen));
+
+                for (YapVoice voice : defaultVoices) {
+                    addEntry(new VoiceEntry(voice, screen));
+                }
+            }
+
+            List<Map.Entry<String, List<YapVoice>>> sortedGroups =
+                    new ArrayList<>(groupedVoices.entrySet());
+
+            sortedGroups.sort(
+                    (a, b) -> {
+                        int nameCompare = getModName(a.getKey())
+                                .compareToIgnoreCase(getModName(b.getKey()));
+
+                        if (nameCompare != 0) {
+                            return nameCompare;
+                        }
+
+                        return a.getKey().compareToIgnoreCase(b.getKey());
+                    }
+            );
+
+            for (Map.Entry<String, List<YapVoice>> group : sortedGroups) {
                 addEntry(new HeaderEntry(getModName(group.getKey()), screen));
 
                 for (YapVoice voice : group.getValue()) {

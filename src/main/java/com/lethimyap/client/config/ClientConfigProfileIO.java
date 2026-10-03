@@ -1,22 +1,21 @@
 package com.lethimyap.client.config;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.lethimyap.messages.ClientDialogueConfig;
 import com.lethimyap.api.YapPoolRegistry;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.lethimyap.messages.ClientDialogueConfig;
 
 public final class ClientConfigProfileIO {
 
     private static final Gson GSON =
             new GsonBuilder()
-                    .setPrettyPrinting()
                     .disableHtmlEscaping()
                     .create();
 
@@ -24,7 +23,22 @@ public final class ClientConfigProfileIO {
     }
 
     public static String exportToJson() {
-        return GSON.toJson(createSnapshot());
+        JsonObject json =
+                GSON.toJsonTree(createSnapshot()).getAsJsonObject();
+
+        JsonObject settings = json.getAsJsonObject("settings");
+
+        if (settings != null && settings.size() == 0) {
+            json.remove("settings");
+        }
+
+        JsonObject pools = json.getAsJsonObject("pools");
+
+        if (pools != null && pools.size() == 0) {
+            json.remove("pools");
+        }
+
+        return GSON.toJson(json);
     }
 
     public static ImportResult parseImport(String json) {

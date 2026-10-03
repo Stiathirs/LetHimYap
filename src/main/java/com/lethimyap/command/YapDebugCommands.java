@@ -2,7 +2,7 @@ package com.lethimyap.command;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.mojang.brigadier.arguments.StringArgumentType;
+
 import com.lethimyap.LetHimYap;
 import com.lethimyap.api.LetHimYapApi;
 import com.lethimyap.api.YapPoolRegistry;
@@ -12,7 +12,8 @@ import com.lethimyap.messages.PoolCooldownManager;
 import com.lethimyap.messages.PoolOverrideConfig;
 import com.lethimyap.messages.ServerMessageConfig;
 import com.lethimyap.messages.TextMutationRegistry;
-import net.minecraft.network.chat.Component;
+import com.mojang.brigadier.arguments.StringArgumentType;
+
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.network.chat.Component;

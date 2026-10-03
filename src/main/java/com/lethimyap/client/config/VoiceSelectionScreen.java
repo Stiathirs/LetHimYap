@@ -29,7 +29,6 @@ public class VoiceSelectionScreen extends YapConfigScreen {
 
     public VoiceSelectionScreen(
             Screen parent,
-            // String selectedVoice,
             Consumer<String> onSelect
     ) {
         super(Component.literal("Select Voice"));

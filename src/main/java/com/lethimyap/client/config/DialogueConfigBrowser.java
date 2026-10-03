@@ -63,6 +63,79 @@ public final class DialogueConfigBrowser {
         }
     }
 
+    public static String getGroupNamespace(String group) {
+        if (group == null || group.isBlank()) return "lethimyap";
+
+        int separator = group.indexOf('.');
+        return separator > 0 ? group.substring(0, separator) : "lethimyap";
+    }
+
+    public static String getGroupModName(String group) {
+        String namespace = getGroupNamespace(group);
+
+        return ModList.get().getModContainerById(namespace)
+                .map(container -> container.getModInfo().getDisplayName())
+                .orElse(namespace);
+    }
+
+    public static boolean groupMatchesSearch(String group, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!matchesModFilter(group, search)) return false;
+
+        if (!query.hasText() && !query.hasDeepText()) return true;
+
+        if (query.hasText() && matchesText(group, query.text())) return true;
+
+        for (String pool : getPools(group))
+            if (poolMatchesSearch(group, pool, search)) return true;
+
+        return false;
+    }
+
+    public static boolean poolMatchesSearch(String group, String pool, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!matchesModFilter(group, search)) return false;
+
+        boolean poolMatches = matchesText(pool, query.text());
+
+        if (query.hasText() && !poolMatches) return false;
+        if (!query.hasDeepText()) return true;
+
+        for (String message : getMessages(group, pool))
+            if (matchesText(message, query.deepText())) return true;
+
+        return false;
+    }
+
+    public static boolean lineMatchesSearch(String message, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!query.hasDeepText()) return true;
+
+        return matchesText(message, query.deepText());
+    }
+
+    private static boolean matchesText(String value, String search) {
+        if (search == null || search.isBlank()) return true;
+
+        return value != null
+                && value.toLowerCase(java.util.Locale.ROOT)
+                        .contains(search.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    private static boolean matchesModFilter(String group, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!query.hasModFilter()) return true;
+
+        String namespace = getGroupNamespace(group);
+        String modName = getGroupModName(group);
+
+        return ConfigSearch.matches(search, "", namespace, modName);
+    }
+
     private static void collectGroups(
             Config config,
             String path,

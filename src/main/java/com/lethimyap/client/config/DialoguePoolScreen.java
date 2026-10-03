@@ -7,28 +7,29 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
+import java.util.ArrayList;
 
 public class DialoguePoolScreen extends YapConfigScreen {
 
     private final Screen parent;
     private final String group;
 
-    public DialoguePoolScreen(
-            Screen parent,
-            String group
-    ) {
-        super(Component.literal(
-                DialogueGroupScreen.prettify(group)
-        ));
+    private final String searchText;
+
+    public DialoguePoolScreen(Screen parent, String group, String searchText) {
+        super(Component.literal(DialogueGroupScreen.prettify(group)));
 
         this.parent = parent;
         this.group = group;
+        this.searchText = searchText;
     }
 
     @Override
     protected void init() {
-        List<String> pools =
-                DialogueConfigBrowser.getPools(group);
+        List<String> pools = new ArrayList<>();
+
+        for (String pool : DialogueConfigBrowser.getPools(group))
+            if (DialogueConfigBrowser.poolMatchesSearch(group, pool, searchText)) pools.add(pool);
 
         DialogueNavigationList list =
                 new DialogueNavigationList(
@@ -40,11 +41,7 @@ public class DialoguePoolScreen extends YapConfigScreen {
                         24,
                         pools,
                         pool -> Minecraft.getInstance().setScreen(
-                                new DialogueLineScreen(
-                                        this,
-                                        group,
-                                        pool
-                                )
+                                new DialogueLineScreen(this, group, pool)
                         )
                 );
 

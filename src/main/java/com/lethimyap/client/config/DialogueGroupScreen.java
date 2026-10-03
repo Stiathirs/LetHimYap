@@ -1,15 +1,20 @@
 package com.lethimyap.client.config;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraftforge.fml.ModList;
 
 public class DialogueGroupScreen extends YapConfigScreen {
+    private EditBox searchBox;
+    private DialogueNavigationList list;
+    private String searchText = "";
 
     private final Screen parent;
 
@@ -20,22 +25,28 @@ public class DialogueGroupScreen extends YapConfigScreen {
 
     @Override
     protected void init() {
-        List<String> groups =
-                DialogueConfigBrowser.getGroups();
+        List<String> groups = DialogueConfigBrowser.getGroups();
 
-        DialogueNavigationList list =
-                new DialogueNavigationList(
-                        this.minecraft,
-                        this.width,
-                        this.height,
-                        42,
-                        this.height - 36,
-                        24,
-                        groups,
-                        group -> Minecraft.getInstance().setScreen(new DialoguePoolScreen(this,group))
-                );
+        list = new DialogueNavigationList(
+                this.minecraft,
+                this.width,
+                this.height,
+                54,
+                this.height - 36,
+                24,
+                groups,
+                group -> Minecraft.getInstance().setScreen(new DialoguePoolScreen(this, group, searchText))
+        );
+
+        searchBox = new EditBox(font, width / 2 - 145, 30, 290, 20, Component.literal("Search dialogue"));
+
+        searchBox.setHint(ConfigSearch.dialogueHint());
+        searchBox.setFormatter(ConfigSearch::formatDialogueEditBox);
+        searchBox.setValue(searchText);
+        searchBox.setResponder(this::setSearch);
 
         addRenderableWidget(list);
+        addRenderableWidget(searchBox);
 
         addRenderableWidget(
                 Button.builder(
@@ -48,6 +59,19 @@ public class DialogueGroupScreen extends YapConfigScreen {
                         20
                 ).build()
         );
+
+        setSearch(searchText);
+    }
+
+    private void setSearch(String search) {
+        searchText = search;
+
+        List<String> filtered = new ArrayList<>();
+
+        for (String group : DialogueConfigBrowser.getGroups())
+            if (DialogueConfigBrowser.groupMatchesSearch(group, search)) filtered.add(group);
+
+        list.setItems(filtered);
     }
 
     @Override

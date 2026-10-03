@@ -13,6 +13,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.ContainerObjectSelectionList;
+import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
 import net.minecraft.client.gui.screens.Screen;
@@ -23,9 +24,13 @@ public class VoiceSelectionScreen extends YapConfigScreen {
     private final Screen parent;
     private final Consumer<String> onSelect;
 
-    private final VoicePreviewController preview = new VoicePreviewController();
-
     private String hoveredDescription;
+
+    private EditBox searchBox;
+    private VoiceList voiceList;
+    private String searchText = "";
+
+    private final VoicePreviewController preview = new VoicePreviewController();
 
     public VoiceSelectionScreen(
             Screen parent,
@@ -39,30 +44,35 @@ public class VoiceSelectionScreen extends YapConfigScreen {
 
     @Override
     protected void init() {
-        VoiceList list =
-                new VoiceList(
-                        minecraft,
-                        width,
-                        height,
-                        42,
-                        height - 36,
-                        24,
-                        YapVoiceRegistry.getVoices(),
-                        this
-                );
+        searchBox = new EditBox(font, width / 2 - 145, 30, 290, 20, Component.literal("Search voices"));
+        searchBox.setBordered(true);
+        searchBox.setHint(ConfigSearch.voiceHint());
+        searchBox.setValue(searchText);
+        searchBox.setFormatter(ConfigSearch::formatVoiceEditBox);
 
-        addRenderableWidget(list);
+        voiceList = new VoiceList(
+                minecraft,
+                width,
+                height,
+                54,
+                height - 36,
+                24,
+                YapVoiceRegistry.getVoices(),
+                this
+        );
+
+        searchBox.setResponder(value -> {
+            searchText = value;
+            voiceList.setSearch(value);
+        });
+
+        addRenderableWidget(voiceList);
+        addRenderableWidget(searchBox);
 
         addRenderableWidget(
-                Button.builder(
-                        Component.literal("Cancel"),
-                        button -> onClose()
-                ).bounds(
-                        width / 2 - 100,
-                        height - 28,
-                        200,
-                        20
-                ).build()
+                Button.builder(Component.literal("Cancel"), button -> onClose())
+                        .bounds(width / 2 - 100, height - 28, 200, 20)
+                        .build()
         );
     }
 
@@ -140,6 +150,9 @@ public class VoiceSelectionScreen extends YapConfigScreen {
     private static class VoiceList
             extends ContainerObjectSelectionList<VoiceList.Entry> {
 
+        private final List<YapVoice> voices;
+        private final VoiceSelectionScreen screen;
+
         public VoiceList(
                 Minecraft minecraft,
                 int width,
@@ -150,21 +163,46 @@ public class VoiceSelectionScreen extends YapConfigScreen {
                 List<YapVoice> voices,
                 VoiceSelectionScreen screen
         ) {
-            super(
-                    minecraft,
-                    width,
-                    height,
-                    top,
-                    bottom,
-                    itemHeight
-            );
+            super(minecraft, width, height, top, bottom, itemHeight);
+
+            this.voices = new ArrayList<>(voices);
+            this.screen = screen;
+
+            rebuild("");
+        }
+
+        private void setSearch(String search) {
+            rebuild(search);
+        }
+
+        private void rebuild(String search) {
+            clearEntries();
 
             Map<String, List<YapVoice>> groupedVoices = new LinkedHashMap<>();
 
+            ConfigSearch.Query query = ConfigSearch.parse(search);
+            String explicitModId = null;
+
+            if (query.hasModFilter()) {
+                for (YapVoice voice : voices) {
+                    String namespace = voice.id().getNamespace();
+
+                    if (ConfigSearch.matchesModId(search, namespace)) {
+                        explicitModId = namespace;
+                        break;
+                    }
+                }
+            }
+
             for (YapVoice voice : voices) {
-                groupedVoices
-                        .computeIfAbsent(voice.id().getNamespace(), namespace -> new ArrayList<>())
-                        .add(voice);
+                String namespace = voice.id().getNamespace();
+                String modName = getModName(namespace);
+                String searchableText = voice.displayName() + " " + voice.description();
+
+                if (explicitModId != null && !namespace.equalsIgnoreCase(explicitModId)) continue;
+                if (!ConfigSearch.matches(search, searchableText, namespace, modName)) continue;
+
+                groupedVoices.computeIfAbsent(namespace, ignored -> new ArrayList<>()).add(voice);
             }
 
             List<YapVoice> defaultVoices = groupedVoices.remove("lethimyap");
@@ -172,42 +210,31 @@ public class VoiceSelectionScreen extends YapConfigScreen {
             if (defaultVoices != null) {
                 addEntry(new HeaderEntry(getModName("lethimyap"), screen));
 
-                for (YapVoice voice : defaultVoices) {
+                for (YapVoice voice : defaultVoices)
                     addEntry(new VoiceEntry(voice, screen));
-                }
             }
 
-            List<Map.Entry<String, List<YapVoice>>> sortedGroups =
-                    new ArrayList<>(groupedVoices.entrySet());
+            List<Map.Entry<String, List<YapVoice>>> sortedGroups = new ArrayList<>(groupedVoices.entrySet());
 
-            sortedGroups.sort(
-                    (a, b) -> {
-                        int nameCompare = getModName(a.getKey())
-                                .compareToIgnoreCase(getModName(b.getKey()));
+            sortedGroups.sort((a, b) -> {
+                int nameCompare = getModName(a.getKey()).compareToIgnoreCase(getModName(b.getKey()));
 
-                        if (nameCompare != 0) {
-                            return nameCompare;
-                        }
+                if (nameCompare != 0) return nameCompare;
 
-                        return a.getKey().compareToIgnoreCase(b.getKey());
-                    }
-            );
+                return a.getKey().compareToIgnoreCase(b.getKey());
+            });
 
             for (Map.Entry<String, List<YapVoice>> group : sortedGroups) {
                 addEntry(new HeaderEntry(getModName(group.getKey()), screen));
 
-                for (YapVoice voice : group.getValue()) {
+                for (YapVoice voice : group.getValue())
                     addEntry(new VoiceEntry(voice, screen));
-                }
             }
         }
 
         private static String getModName(String namespace) {
-            return ModList.get()
-                    .getModContainerById(namespace)
-                    .map(container ->
-                            container.getModInfo().getDisplayName()
-                    )
+            return ModList.get().getModContainerById(namespace)
+                    .map(container -> container.getModInfo().getDisplayName())
                     .orElse(namespace);
         }
 

@@ -13,6 +13,9 @@ import net.minecraft.network.chat.Component;
 public class DialogueNavigationList
         extends ObjectSelectionList<DialogueNavigationList.Entry> {
 
+    private final Consumer<String> onSelected;
+    private final Function<String, String> displayName;
+
     public DialogueNavigationList(
             Minecraft minecraft,
             int width,
@@ -47,24 +50,19 @@ public class DialogueNavigationList
             Consumer<String> onSelected,
             Function<String, String> displayName
     ) {
-        super(
-                minecraft,
-                width,
-                height,
-                top,
-                bottom,
-                itemHeight
-        );
+        super(minecraft, width, height, top, bottom, itemHeight);
 
-        for (String id : ids) {
-            addEntry(
-                    new Entry(
-                            id,
-                            onSelected,
-                            displayName
-                    )
-            );
-        }
+        this.onSelected = onSelected;
+        this.displayName = displayName;
+
+        setItems(ids);
+    }
+
+    public final void setItems(List<String> ids) {
+        clearEntries();
+
+        for (String id : ids)
+            addEntry(new Entry(id, onSelected, displayName));
     }
 
     @Override

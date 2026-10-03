@@ -1,19 +1,19 @@
 package com.lethimyap.client.config;
 
-import com.lethimyap.client.config.ClientConfigProfileIO;
+import java.util.List;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.components.Tooltip;
+import net.minecraft.client.gui.components.toasts.SystemToast;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.util.List;
 
 public class ClientConfigScreen extends YapConfigScreen {
 
     private final Screen parent;
+    Minecraft client = Minecraft.getInstance();
 
     public ClientConfigScreen(Screen parent) {
         super(Component.literal("Let Him Yap"));
@@ -28,7 +28,7 @@ public class ClientConfigScreen extends YapConfigScreen {
         addRenderableWidget(
                 Button.builder(
                         Component.literal("General Settings"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new GeneralSettingsScreen(this)
                         )
                 )
@@ -39,7 +39,7 @@ public class ClientConfigScreen extends YapConfigScreen {
         addRenderableWidget(
                 Button.builder(
                         Component.literal("Dialogue Lines"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new DialogueGroupScreen(this)
                         )
                 )
@@ -48,14 +48,14 @@ public class ClientConfigScreen extends YapConfigScreen {
         );
 
         boolean hasWorld =
-                this.minecraft.level != null
-                        && this.minecraft.player != null
-                        && this.minecraft.getConnection() != null;
+                client.level != null
+                        && client.player != null
+                        && client.getConnection() != null;
 
         Button serverDialogueButton =
                 Button.builder(
                         Component.literal("Server Dialogue"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new ServerDialogueGroupScreen(this)
                         )
                 )
@@ -79,7 +79,7 @@ public class ClientConfigScreen extends YapConfigScreen {
         addRenderableWidget(
                 Button.builder(
                         Component.literal("Voice"),
-                        button -> this.minecraft.setScreen(
+                        button -> Minecraft.getInstance().setScreen(
                                 new VoiceConfigScreen(this)
                         )
                 )
@@ -91,13 +91,13 @@ public class ClientConfigScreen extends YapConfigScreen {
                 Button.builder(
                         Component.literal("Import"),
                         button -> {
-                            String json = this.minecraft.keyboardHandler.getClipboard();
+                            String json = client.keyboardHandler.getClipboard();
 
                             ClientConfigProfileIO.ImportResult result = ClientConfigProfileIO.parseImport(json);
 
                             if (!result.isValid()) {
                                 SystemToast.add(
-                                        this.minecraft.getToasts(),
+                                        client.getToasts(),
                                         SystemToast.SystemToastIds.PACK_LOAD_FAILURE,
                                         Component.literal("Import Failed"),
                                         Component.literal(result.error())
@@ -109,7 +109,7 @@ public class ClientConfigScreen extends YapConfigScreen {
                             List<String> unknownPools =
                                     ClientConfigProfileIO.findUnknownPools(result.profile());
 
-                            this.minecraft.setScreen(
+                            Minecraft.getInstance().setScreen(
                                     new ClientProfileImportConfirmScreen(this, result.profile(), unknownPools)
                             );
                         }
@@ -134,7 +134,7 @@ public class ClientConfigScreen extends YapConfigScreen {
                             String json =
                                     ClientConfigProfileIO.exportToJson();
 
-                            this.minecraft.keyboardHandler
+                            client.keyboardHandler
                                     .setClipboard(json);
                         }
                 )
@@ -185,6 +185,6 @@ public class ClientConfigScreen extends YapConfigScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 }

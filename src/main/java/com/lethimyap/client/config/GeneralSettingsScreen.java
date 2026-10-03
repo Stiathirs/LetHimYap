@@ -2,7 +2,9 @@ package com.lethimyap.client.config;
 
 import com.lethimyap.messages.ClientDialogueConfig;
 import com.lethimyap.messages.DialogueColor;
+
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -126,6 +128,7 @@ public class GeneralSettingsScreen extends YapConfigScreen {
     protected void init() {
         buildWidgets();
     }
+
 
     private void buildWidgets() {
         clearWidgets();
@@ -352,6 +355,8 @@ public class GeneralSettingsScreen extends YapConfigScreen {
     private Button saveButton;
     private Button discardButton;
 
+    
+    @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")    // Affects Integer.parseInt(text); - Intended behavior
     private EditBox createIntegerBox(
             int value,
             String hint
@@ -384,6 +389,7 @@ public class GeneralSettingsScreen extends YapConfigScreen {
         return box;
     }
 
+    @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")    // Affects Double.parseDouble(text); - Intended behavior
     private EditBox createDoubleBox(
             double value,
             String hint
@@ -416,6 +422,7 @@ public class GeneralSettingsScreen extends YapConfigScreen {
         return box;
     }
 
+    @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")    // Affects Float.parseFloat(text); - Intended behavior
     private EditBox createFloatBox(
             float value,
             String hint
@@ -662,18 +669,18 @@ public class GeneralSettingsScreen extends YapConfigScreen {
                 );
 
         if (saved) {
-            this.minecraft.setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
         }
     }
 
     private void discardAndExit() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 
     @Override
     public void onClose() {
         if (!dirty) {
-            this.minecraft.setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
             return;
         }
 

@@ -1,5 +1,14 @@
 package com.lethimyap.messages;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Objects;
+import java.util.Random;
+
+import org.slf4j.Logger;
+
 import com.electronwill.nightconfig.core.Config;
 import com.electronwill.nightconfig.core.file.CommentedFileConfig;
 import com.lethimyap.api.YapPoolRegistry;
@@ -7,15 +16,12 @@ import com.lethimyap.client.config.ClientConfigProfile;
 import com.lethimyap.client.config.DialogueConfigBrowser;
 import com.lethimyap.network.ModNetwork;
 import com.lethimyap.network.SyncVoiceSelectionPacket;
+import com.mojang.logging.LogUtils;
 
 import net.minecraft.client.Minecraft;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.Random;
-
 public class ClientDialogueConfig {
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final Random RANDOM = new Random();
     private static ClientDialogueConfig INSTANCE;
@@ -124,7 +130,7 @@ public class ClientDialogueConfig {
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to save client dialogue settings", e);
             return false;
         }
     }
@@ -135,7 +141,7 @@ public class ClientDialogueConfig {
             try {
                 INSTANCE.toml.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                LOGGER.error("Failed to close the existing client dialogue config", e);
             }
         }
 
@@ -166,17 +172,17 @@ public class ClientDialogueConfig {
             String dialogueColor = settings.dialogueColor != null ? settings.dialogueColor : DEFAULT_DIALOGUE_COLOR.name().toLowerCase();
             String importedVoice = profile.settings != null && profile.settings.voice != null && !profile.settings.voice.isBlank() ? profile.settings.voice : DEFAULT_VOICE;
 
-            String hudAnchor = settings.hudAnchor != null ? settings.hudAnchor : DEFAULT_HUD_ANCHOR;
-            int hudEdgeDistance = settings.hudEdgeDistance != null ? settings.hudEdgeDistance : DEFAULT_HUD_EDGE_DISTANCE;
-            int hudMaxWidth = settings.hudMaxWidth != null ? settings.hudMaxWidth : DEFAULT_HUD_MAX_WIDTH;
+            String hudAnchor = Objects.requireNonNullElse(settings.hudAnchor, DEFAULT_HUD_ANCHOR);
+            int hudEdgeDistance = Objects.requireNonNullElse(settings.hudEdgeDistance, DEFAULT_HUD_EDGE_DISTANCE);
+            int hudMaxWidth = Objects.requireNonNullElse(settings.hudMaxWidth, DEFAULT_HUD_MAX_WIDTH);
 
-            double overheadYOffset = settings.overheadYOffset != null ? settings.overheadYOffset : DEFAULT_OVERHEAD_Y_OFFSET;
-            float overheadScale = settings.overheadScale != null ? settings.overheadScale : DEFAULT_OVERHEAD_SCALE;
-            int overheadMaxWidth = settings.overheadMaxWidth != null ? settings.overheadMaxWidth : DEFAULT_OVERHEAD_MAX_WIDTH;
+            double overheadYOffset = Objects.requireNonNullElse(settings.overheadYOffset, DEFAULT_OVERHEAD_Y_OFFSET);
+            float overheadScale = Objects.requireNonNullElse(settings.overheadScale, DEFAULT_OVERHEAD_SCALE);
+            int overheadMaxWidth = Objects.requireNonNullElse(settings.overheadMaxWidth, DEFAULT_OVERHEAD_MAX_WIDTH);
 
-            String lastWordsAnchor = settings.lastWordsAnchor != null ? settings.lastWordsAnchor : DEFAULT_LAST_WORDS_ANCHOR;
-            int lastWordsOffset = settings.lastWordsOffset != null ? settings.lastWordsOffset : DEFAULT_LAST_WORDS_OFFSET;
-            int lastWordsMaxWidth = settings.lastWordsMaxWidth != null ? settings.lastWordsMaxWidth : DEFAULT_LAST_WORDS_MAX_WIDTH;
+            String lastWordsAnchor = Objects.requireNonNullElse(settings.lastWordsAnchor, DEFAULT_LAST_WORDS_ANCHOR);
+            int lastWordsOffset = Objects.requireNonNullElse(settings.lastWordsOffset, DEFAULT_LAST_WORDS_OFFSET);
+            int lastWordsMaxWidth = Objects.requireNonNullElse(settings.lastWordsMaxWidth, DEFAULT_LAST_WORDS_MAX_WIDTH);
 
             /*
             * Apply general settings.
@@ -260,7 +266,7 @@ public class ClientDialogueConfig {
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to apply client config profile", e);
             return false;
         }
     }
@@ -283,7 +289,7 @@ public class ClientDialogueConfig {
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to remove dialogue pools from client config", e);
             return false;
         }
     }
@@ -341,8 +347,8 @@ public class ClientDialogueConfig {
             LAST_MODIFIED = getLastModified(file);
             return config;
 
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            LOGGER.error("Failed to load client dialogue config", e);
             ClientDialogueConfig fallback = new ClientDialogueConfig();
             fallback.dialogueColor = DEFAULT_DIALOGUE_COLOR;
             return fallback;
@@ -419,7 +425,7 @@ public class ClientDialogueConfig {
             toml.save();
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to write default client dialogue config", e);
         }
     }
 
@@ -671,13 +677,9 @@ public class ClientDialogueConfig {
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to save selected voice", e);
             return false;
         }
-    }
-
-    private static void putMessages(CommentedFileConfig toml, String poolId, String... messages) {
-        toml.set("pools." + poolId + ".messages", List.of(messages));
     }
 
     private static String getString(CommentedFileConfig toml, String path, String fallback) {
@@ -722,7 +724,7 @@ public class ClientDialogueConfig {
             if (!Files.exists(file)) return 0L;
 
             return Files.getLastModifiedTime(file).toMillis();
-        } catch (Exception e) {
+        } catch (IOException e) {
             return 0L;
         }
     }

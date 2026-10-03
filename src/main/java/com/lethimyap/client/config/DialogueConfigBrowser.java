@@ -1,19 +1,24 @@
 package com.lethimyap.client.config;
 
-import com.electronwill.nightconfig.core.Config;
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.lethimyap.api.YapPoolRegistry;
-import com.lethimyap.messages.ClientDialogueConfig;
-
-import net.minecraftforge.fml.ModList;
-
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+
+import com.electronwill.nightconfig.core.Config;
+import com.electronwill.nightconfig.core.file.CommentedFileConfig;
+import com.lethimyap.api.YapPoolRegistry;
+import com.lethimyap.messages.ClientDialogueConfig;
+import com.mojang.logging.LogUtils;
+
+import net.minecraftforge.fml.ModList;
+
 public final class DialogueConfigBrowser {
+
+    private static final Logger LOGGER = LogUtils.getLogger();
 
     private static final Path CLIENT_DIALOGUE_FILE =
             Path.of("config", "lethimyap", "client_dialogue.toml");
@@ -53,9 +58,82 @@ public final class DialogueConfigBrowser {
             return groups;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to read dialogue groups.", e);
             return Collections.emptyList();
         }
+    }
+
+    public static String getGroupNamespace(String group) {
+        if (group == null || group.isBlank()) return "lethimyap";
+
+        int separator = group.indexOf('.');
+        return separator > 0 ? group.substring(0, separator) : "lethimyap";
+    }
+
+    public static String getGroupModName(String group) {
+        String namespace = getGroupNamespace(group);
+
+        return ModList.get().getModContainerById(namespace)
+                .map(container -> container.getModInfo().getDisplayName())
+                .orElse(namespace);
+    }
+
+    public static boolean groupMatchesSearch(String group, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!matchesModFilter(group, search)) return false;
+
+        if (!query.hasText() && !query.hasDeepText()) return true;
+
+        if (query.hasText() && matchesText(group, query.text())) return true;
+
+        for (String pool : getPools(group))
+            if (poolMatchesSearch(group, pool, search)) return true;
+
+        return false;
+    }
+
+    public static boolean poolMatchesSearch(String group, String pool, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!matchesModFilter(group, search)) return false;
+
+        boolean poolMatches = matchesText(pool, query.text());
+
+        if (query.hasText() && !poolMatches) return false;
+        if (!query.hasDeepText()) return true;
+
+        for (String message : getMessages(group, pool))
+            if (matchesText(message, query.deepText())) return true;
+
+        return false;
+    }
+
+    public static boolean lineMatchesSearch(String message, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!query.hasDeepText()) return true;
+
+        return matchesText(message, query.deepText());
+    }
+
+    private static boolean matchesText(String value, String search) {
+        if (search == null || search.isBlank()) return true;
+
+        return value != null
+                && value.toLowerCase(java.util.Locale.ROOT)
+                        .contains(search.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    private static boolean matchesModFilter(String group, String search) {
+        ConfigSearch.Query query = ConfigSearch.parse(search);
+
+        if (!query.hasModFilter()) return true;
+
+        String namespace = getGroupNamespace(group);
+        String modName = getGroupModName(group);
+
+        return ConfigSearch.matches(search, "", namespace, modName);
     }
 
     private static void collectGroups(
@@ -137,7 +215,7 @@ public final class DialogueConfigBrowser {
             return pools;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to read dialogue pools for group '{}'.", group, e);
             return Collections.emptyList();
         }
     }
@@ -245,7 +323,7 @@ public final class DialogueConfigBrowser {
             return messages;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to read messages for pool '{}:{}'.", group, pool, e);
             return Collections.emptyList();
         }
     }
@@ -305,7 +383,7 @@ public final class DialogueConfigBrowser {
             return true;
 
         } catch (Exception e) {
-            e.printStackTrace();
+            LOGGER.error("Failed to save messages for pool '{}:{}'.", group, pool, e);
             return false;
         }
     }

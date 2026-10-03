@@ -6,6 +6,7 @@ import java.util.List;
 import com.lethimyap.client.ClientServerDialogueConfig;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
@@ -181,7 +182,7 @@ public class DialogueLineScreen extends YapConfigScreen {
 
     private void saveAndExit() {
         if (!dirty) {
-            this.minecraft.setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
             return;
         }
 
@@ -193,7 +194,7 @@ public class DialogueLineScreen extends YapConfigScreen {
             return;
         }
 
-        this.minecraft.setScreen(
+        Minecraft.getInstance().setScreen(
                 new DialogueLineEditScreen(
                         this,
                         messages.get(index),
@@ -207,7 +208,7 @@ public class DialogueLineScreen extends YapConfigScreen {
     }
 
     private void addLine() {
-        this.minecraft.setScreen(
+        Minecraft.getInstance().setScreen(
                 new DialogueLineEditScreen(
                         this,
                         "",
@@ -297,11 +298,11 @@ public class DialogueLineScreen extends YapConfigScreen {
     @Override
     public void onClose() {
         if (!dirty) {
-            this.minecraft.setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
             return;
         }
 
-        this.minecraft.setScreen(
+        Minecraft.getInstance().setScreen(
                 new UnsavedDialogueChangesScreen(this)
         );
     }
@@ -310,13 +311,13 @@ public class DialogueLineScreen extends YapConfigScreen {
         boolean saved = saveMessages();
 
         if (saved) {
-            this.minecraft.setScreen(parent);
+            Minecraft.getInstance().setScreen(parent);
         } else {
             /*
             * Return to the editor with the working copy intact.
             * We'll add an actual visible error message shortly.
             */
-            this.minecraft.setScreen(this);
+            Minecraft.getInstance().setScreen(this);
         }
     }
 
@@ -336,6 +337,6 @@ public class DialogueLineScreen extends YapConfigScreen {
     }
 
     void discardAndExit() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 }

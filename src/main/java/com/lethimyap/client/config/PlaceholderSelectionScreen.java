@@ -1,14 +1,16 @@
 package com.lethimyap.client.config;
 
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
+
 import com.lethimyap.messages.PlaceholderRegistry;
+
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 public class PlaceholderSelectionScreen extends YapConfigScreen {
 
@@ -62,7 +64,7 @@ public class PlaceholderSelectionScreen extends YapConfigScreen {
 
     private void selectPlaceholder(String id) {
         onSelected.accept(id);
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 
     @Override
@@ -100,6 +102,6 @@ public class PlaceholderSelectionScreen extends YapConfigScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 }

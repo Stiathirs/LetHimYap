@@ -1,15 +1,16 @@
 package com.lethimyap.client.config;
 
+import java.util.function.Consumer;
+
 import com.lethimyap.messages.PlaceholderRegistry;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import java.util.function.Consumer;
 
 public class DialogueLineEditScreen extends YapConfigScreen {
     private final Screen parent;
@@ -129,11 +130,7 @@ public class DialogueLineEditScreen extends YapConfigScreen {
             draftText = editBox.getValue();
             placeholderInsertPosition = editBox.getCursorPosition();
 
-            this.minecraft.setScreen(
-                    new PlaceholderSelectionScreen(
-                            this,
-                            this::insertPlaceholder
-                    )
+            Minecraft.getInstance().setScreen(new PlaceholderSelectionScreen(this, this::insertPlaceholder)
             );
         }
 
@@ -163,7 +160,7 @@ public class DialogueLineEditScreen extends YapConfigScreen {
 
     private void finishEditing() {
         onDone.accept(editBox.getValue());
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 
     @Override
@@ -193,6 +190,6 @@ public class DialogueLineEditScreen extends YapConfigScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(parent);
+        Minecraft.getInstance().setScreen(parent);
     }
 }

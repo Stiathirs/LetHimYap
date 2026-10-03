@@ -1,8 +1,8 @@
 package com.lethimyap.client.config;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
 public class UnsavedDialogueChangesScreen extends YapConfigScreen {
@@ -95,6 +95,6 @@ public class UnsavedDialogueChangesScreen extends YapConfigScreen {
 
     @Override
     public void onClose() {
-        this.minecraft.setScreen(editor);
+        Minecraft.getInstance().setScreen(editor);
     }
 }

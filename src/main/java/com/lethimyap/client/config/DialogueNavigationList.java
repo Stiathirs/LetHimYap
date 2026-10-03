@@ -1,14 +1,14 @@
 package com.lethimyap.client.config;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.network.chat.Component;
-
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
+
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.ObjectSelectionList;
+import net.minecraft.network.chat.Component;
 
 public class DialogueNavigationList
         extends ObjectSelectionList<DialogueNavigationList.Entry> {
@@ -78,8 +78,6 @@ public class DialogueNavigationList
     }
 
     public class Entry extends ObjectSelectionList.Entry<Entry> {
-
-        private final String id;
         private final Button button;
 
         private Entry(
@@ -87,8 +85,6 @@ public class DialogueNavigationList
                 Consumer<String> onSelected,
                 Function<String, String> displayName
         ) {
-            this.id = id;
-
             this.button = Button.builder(
                     Component.literal(
                             displayName.apply(id)

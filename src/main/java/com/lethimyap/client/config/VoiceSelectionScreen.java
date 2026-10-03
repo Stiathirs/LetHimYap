@@ -21,7 +21,6 @@ import net.minecraftforge.fml.ModList;
 
 public class VoiceSelectionScreen extends YapConfigScreen {
     private final Screen parent;
-    private final String selectedVoice;
     private final Consumer<String> onSelect;
 
     private final VoicePreviewController preview = new VoicePreviewController();
@@ -30,13 +29,12 @@ public class VoiceSelectionScreen extends YapConfigScreen {
 
     public VoiceSelectionScreen(
             Screen parent,
-            String selectedVoice,
+            // String selectedVoice,
             Consumer<String> onSelect
     ) {
         super(Component.literal("Select Voice"));
 
         this.parent = parent;
-        this.selectedVoice = selectedVoice;
         this.onSelect = onSelect;
     }
 
@@ -143,8 +141,6 @@ public class VoiceSelectionScreen extends YapConfigScreen {
     private static class VoiceList
             extends ContainerObjectSelectionList<VoiceList.Entry> {
 
-        private final VoiceSelectionScreen screen;
-
         public VoiceList(
                 Minecraft minecraft,
                 int width,
@@ -163,8 +159,6 @@ public class VoiceSelectionScreen extends YapConfigScreen {
                     bottom,
                     itemHeight
             );
-
-            this.screen = screen;
 
             Map<String, List<YapVoice>> groupedVoices = new LinkedHashMap<>();
 

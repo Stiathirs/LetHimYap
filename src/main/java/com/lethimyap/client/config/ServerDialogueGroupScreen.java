@@ -87,27 +87,4 @@ public class ServerDialogueGroupScreen extends YapConfigScreen {
     public void onClose() {
         Minecraft.getInstance().setScreen(parent);
     }
-
-    private static String prettify(String id) {
-        String[] words = id.split("_");
-        StringBuilder result = new StringBuilder();
-
-        for (String word : words) {
-            if (word.isEmpty()) continue;
-
-            if (!result.isEmpty()) {
-                result.append(' ');
-            }
-
-            result.append(
-                    Character.toUpperCase(word.charAt(0))
-            );
-
-            if (word.length() > 1) {
-                result.append(word.substring(1));
-            }
-        }
-
-        return result.toString();
-    }
 }

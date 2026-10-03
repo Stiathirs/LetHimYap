@@ -129,6 +129,7 @@ public class GeneralSettingsScreen extends YapConfigScreen {
         buildWidgets();
     }
 
+
     private void buildWidgets() {
         clearWidgets();
 
@@ -354,6 +355,8 @@ public class GeneralSettingsScreen extends YapConfigScreen {
     private Button saveButton;
     private Button discardButton;
 
+    
+    @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")    // Affects Integer.parseInt(text); - Intended behavior
     private EditBox createIntegerBox(
             int value,
             String hint
@@ -386,6 +389,7 @@ public class GeneralSettingsScreen extends YapConfigScreen {
         return box;
     }
 
+    @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")    // Affects Double.parseDouble(text); - Intended behavior
     private EditBox createDoubleBox(
             double value,
             String hint
@@ -418,6 +422,7 @@ public class GeneralSettingsScreen extends YapConfigScreen {
         return box;
     }
 
+    @SuppressWarnings("UnnecessaryTemporaryOnConversionFromString")    // Affects Float.parseFloat(text); - Intended behavior
     private EditBox createFloatBox(
             float value,
             String hint

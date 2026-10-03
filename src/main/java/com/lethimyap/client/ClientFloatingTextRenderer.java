@@ -1,26 +1,29 @@
 package com.lethimyap.client;
 
-import com.mojang.blaze3d.vertex.PoseStack;
+import java.util.List;
+
+import org.joml.Matrix4f;
+
 import com.lethimyap.LetHimYap;
 import com.lethimyap.messages.ClientDialogueConfig;
 import com.lethimyap.messages.ServerMessageConfig;
+import com.mojang.blaze3d.vertex.PoseStack;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.LightTexture;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.util.Mth;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RenderLevelStageEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import org.joml.Matrix4f;
-
-import java.util.List;
 
 @Mod.EventBusSubscriber(
         modid = LetHimYap.MODID,
@@ -40,11 +43,13 @@ public class ClientFloatingTextRenderer {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_ENTITIES) return;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.level == null || mc.player == null) return;
+        ClientLevel level = mc.level;
+
+        if (level == null || mc.player == null) return;
 
         float partialTick = event.getPartialTick();
 
-        for (Player player : mc.level.players()) {
+        for (Player player : level.players()) {
             ClientFloatingTextData.FloatingText floatingText =
                     ClientFloatingTextData.get(player.getUUID());
 

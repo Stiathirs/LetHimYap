@@ -52,7 +52,6 @@ public class VoiceConfigScreen extends YapConfigScreen {
                                 button -> minecraft.setScreen(
                                         new VoiceSelectionScreen(
                                                 this,
-                                                selectedVoice,
                                                 this::selectVoice
                                         )
                                 )
